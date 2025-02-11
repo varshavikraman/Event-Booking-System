@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F59B9E]">
+    <div class="flex flex-col md:flex-row">
+       
+        <div class="h-screen w-80 bg-[#981D26] flex flex-col items-center md:items-start space-y-6 p-6 pl-24">
+            <img src="/IMAGE/logo1.jpeg" alt="logo" class="h-20 w-20">
+            <nav class="flex flex-col space-y-4 text-center md:text-left">
+                <img src="/IMAGE/profile-2-svgrepo-com.svg" alt="" class="w-16 h-16">
+                <h1 class="text-white  text-3xl font-medium mb-6 ">Admin</h1>
+                <a href="#" class="text-[#F59B9E] text-lg font-medium hover:text-white">Event</a>
+                <a href="add_event.html" class="text-[#F59B9E] text-lg font-medium hover:text-white">Add Event</a>
+                <a href="booking_list.html" class="text-[#F59B9E] text-lg font-medium hover:text-white">Booking</a>
+                <a href="landing.html" class="text-[#F59B9E] text-lg font-medium hover:text-white">Sign Out</a>
+            </nav>
+        </div>
+
+     
+        <div class="flex-1 px-4 py-8 mt-40 ml-20">
+            <h1 class="text-[#981D26] text-2xl sm:text-3xl font-medium mb-6">Upcoming Events</h1>
+            <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 ">
+                <div class="bg-red-50 shadow-lg shadow-[#981D26] rounded-lg p-4">
+                    <img src="/IMAGE/MusicEvents .jpg" alt="Event 1" class="w-full h-48 object-cover rounded">
+                    <h3 class="text-xl font-semibold mt-4 text-[#981D26]">Live Music Concert | Angels</h3>
+                    <p class="mt-2">A night of pure sonic bliss awaits. Don't miss this opportunity to witness the raw talent and infectious energy of Angels as they perform live.</p>
+                    <div class="flex items-center mt-2 space-x-2">
+                        <img src="/IMAGE/calendar-date-schedule-svgrepo-com.svg" alt="Date" class="w-5 h-5">
+                        <p>12/02/2025</p>
+                    </div>
+                    <div class="flex items-center mt-2 space-x-2">
+                        <img src="/IMAGE/music-circle-svgrepo-com.svg" alt="Venue" class="w-5 h-5">
+                        <p>Heaven Club</p>
+                    </div>
+                    <div class="flex items-center mt-2 space-x-2">
+                        <img src="/IMAGE/location-pin-svgrepo-com.svg" alt="Location" class="w-5 h-5">
+                        <p>Thiruvanathapuram</p>
+                    </div>
+                    <div class="flex items-center mt-2 space-x-2">
+                        <img src="/IMAGE/rupee-sign-svgrepo-com.svg" alt="Price" class="w-5 h-5">
+                        <p>250/- Onwards</p>
+                    </div>
+                </div>
+
+                <div class="bg-red-50 shadow-lg shadow-[#981D26] rounded-lg p-4">
+                    <img src="/IMAGE/musicconcert.jpeg" alt="Event 2" class="w-full h-48 object-cover rounded">
+                    <h3 class="text-xl font-semibold mt-4 text-[#981D26]">Music Concert | Lucifer</h3>
+                    <p class="mt-2">Get ready for an exhilarating experience as Lucifer delivers a high-energy performance. Feel the pulse of the music as you join a crowd of passionate fans in celebrating the power of live music.</p>
+                    <div class="flex items-center mt-2 space-x-2">
+                        <img src="/IMAGE/calendar-date-schedule-svgrepo-com.svg" alt="Date" class="w-5 h-5">
+                        <p>02/02/2025</p>
+                    </div>
+                    <div class="flex items-center mt-2 space-x-2">
+                        <img src="/IMAGE/music-circle-svgrepo-com.svg" alt="Venue" class="w-5 h-5">
+                        <p>ABC Hotel</p>
+                    </div>
+                    <div class="flex items-center mt-2 space-x-2">
+                        <img src="/IMAGE/location-pin-svgrepo-com.svg" alt="Location" class="w-5 h-5">
+                        <p>Thiruvanathapuram</p>
+                    </div>
+                    <div class="flex items-center mt-2 space-x-2">
+                        <img src="/IMAGE/rupee-sign-svgrepo-com.svg" alt="Price" class="w-5 h-5">
+                        <p>300/- Onwards</p>
+                    </div>
+                </div>
+            </section>    
+
+        </div>
+    </div> 
+    
+    <footer class="bg-[#500E10] py-4">
+        <div class="text-center text-[#F59B9E]">
+            <p class="text-lg">&copy; 2025 Dancing Leaf. All rights reserved.</p>
+        </div>
+</body>
+</html>

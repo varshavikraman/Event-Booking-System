@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F59B9E]">
+    <div class="flex flex-col md:flex-row">
+      
+        <div class="h-screen w-full md:w-1/4 lg:w-1/5 bg-[#981D26] flex flex-col items-center md:items-start space-y-6 p-6">
+            <img src="/IMAGE/logo1.jpeg" alt="logo" class="h-20 w-20">
+            <nav class="flex flex-col space-y-4 text-center md:text-left">
+                <a href="dashboard.html" class="text-[#F59B9E] text-lg font-medium hover:text-white">Event</a>
+                <a href="add_event.html" class="text-[#F59B9E] text-lg font-medium hover:text-white">Add Event</a>
+                <a href="booking_list.html" class="text-[#F59B9E] text-lg font-medium hover:text-white">Booking</a>
+                <a href="landing.html" class="text-[#F59B9E] text-lg font-medium hover:text-white">Sign Out</a>
+            </nav>
+        </div>
+
+      
+        <div class="flex-1 mt-20 px-4 py-6">
+            <div class="overflow-x-auto">
+                <table class="border-collapse border border-gray-400 w-full max-w-4xl mx-auto text-left bg-red-50">
+                    <thead class="bg-[#D76067] text-[#500E10] text-center">
+                        <tr>
+                
+                            <th rowspan="2" class="border border-gray-400 px-4 py-2">Event</th>
+                            <th rowspan="2" class="border border-gray-400 px-4 py-2">Organizer</th>
+                            <th rowspan="2" class="border border-gray-400 px-4 py-2 ">Date of Event</th>
+                            <th rowspan="2" class="border border-gray-400 px-4 py-2">Total Seats</th>
+                        
+                            
+                            <th colspan="3" class="border border-gray-400 px-4 py-6">VIP Seat Details</th>
+    
+                        
+                        
+                            <th colspan="3" class="border border-gray-400 px-4 py-6">Standard Seat Details</th>
+                        </tr>
+                        
+                        <tr>
+                            
+                            <th class="border border-gray-400 px-4 py-2">Total Tickets</th>
+                            <th class="border border-gray-400 px-4 py-2">Tickets Sold</th>
+                            <th class="border border-gray-400 px-4 py-2">Tickets Unsold</th>
+                        
+                            
+                            <th class="border border-gray-400 px-4 py-2">Total Tickets</th>
+                            <th class="border border-gray-400 px-4 py-2">Tickets Sold</th>
+                            <th class="border border-gray-400 px-4 py-2">Tickets Unsold</th>
+                        </tr>
+                        
+                       
+                    </thead>
+                    <tbody>
+                        <tr class="hover:bg-gray-100">
+                            <td class="border border-gray-400 px-4 py-2">Live Music Concert</td>
+                            <td class="border border-gray-400 px-4 py-2">Angels</td>
+                            <td class="border border-gray-400 px-4 py-2">12/02/2025</td>
+                            <td class="border border-gray-400 px-4 py-2">250</td>
+                            <td class="border border-gray-400 px-4 py-2">60</td>
+                            <td class="border border-gray-400 px-4 py-2">33</td>
+                            <td class="border border-gray-400 px-4 py-2">37</td>
+                            <td class="border border-gray-400 px-4 py-2">190</td>
+                            <td class="border border-gray-400 px-4 py-2">80</td>
+                            <td class="border border-gray-400 px-4 py-2">110</td>
+                        </tr>
+                        <tr class="hover:bg-gray-100">
+                            <td class="border border-gray-400 px-4 py-2">Music Concert</td>
+                            <td class="border border-gray-400 px-4 py-2">Lucifer</td>
+                            <td class="border border-gray-400 px-4 py-2">02/02/2025</td>
+                            <td class="border border-gray-400 px-4 py-2">350</td>
+                            <td class="border border-gray-400 px-4 py-2">80</td>
+                            <td class="border border-gray-400 px-4 py-2">44</td>
+                            <td class="border border-gray-400 px-4 py-2">36</td>
+                            <td class="border border-gray-400 px-4 py-2">270</td>
+                            <td class="border border-gray-400 px-4 py-2">140</td>
+                            <td class="border border-gray-400 px-4 py-2">130</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div> 
+    
+
+    <footer class="bg-[#500E10] py-4 ">
+        <div class="text-center text-[#F59B9E]">
+            <p class="text-sm md:text-lg">&copy; 2025 Dancing Leaf. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Event</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#F59B9E]">
+    <div class="flex flex-col md:flex-row">
+       
+        <div class="h-screen w-80 bg-[#981D26] flex flex-col items-center md:items-start space-y-6 p-6 pl-24">
+            <img src="/IMAGE/logo1.jpeg" alt="logo" class="h-20 w-20">
+            <nav class="flex flex-col space-y-4 text-center md:text-left">
+                
+                <a href="dashboard.html" class="text-[#F59B9E] text-lg font-medium hover:text-white">Event</a>
+                <a href="add_event.html" class="text-[#F59B9E] text-lg font-medium hover:text-white">Add Event</a>
+                <a href="booking_list.html" class="text-[#F59B9E] text-lg font-medium hover:text-white">Booking</a>
+                <a href="landing.html" class="text-[#F59B9E] text-lg font-medium hover:text-white">Sign Out</a>
+            </nav>
+        </div>
+
+     
+        <div class="flex-1 px-4 py-8">
+            <div class="max-w-lg mx-auto bg-white rounded-2xl shadow-lg shadow-[#981D26] p-6">
+                <h2 class="text-[#981D26] text-2xl sm:text-3xl font-medium text-center mb-6">Add Event</h2>
+
+                <form>
+                    <div class="mb-4"><input type="file" id="image" class="w-full mt-1 border border-gray-300 rounded-lg px-4 py-2"></div>
+                    <div class="mb-4">
+                        <label for="name" class="text-[#981D26] block">Event Name:</label>
+                        <input type="text" id="name" required class="w-full mt-1 border border-gray-300 rounded-lg px-4 py-2 ">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="organizer" class="text-[#981D26] block">Organizer:</label>
+                        <input type="text" id="organizer" required class="w-full mt-1 border border-gray-300 rounded-lg px-4 py-2 ">
+                    </div>
+                    <div class="mb-4">
+                        <label for="description" class="text-[#981D26] block">Description:</label>
+                        <textarea rows="5" cols="10" class="w-full mt-1 border border-gray-300 rounded-lg px-4 py-2"></textarea>
+                    </div>
+
+                    <div class="flex gap-4 mb-4">
+                        <div class="w-full sm:w-1/2">
+                            <label for="ticket-count" class="text-[#981D26] ">Venue:</label>
+                            <input type="text" id="ticket-count" required class="w-full mt-1 border border-gray-300 rounded-lg px-4 py-2 ">
+                        </div>
+                        <div class="w-full sm:w-1/2">
+                            <label for="type" class="text-[#981D26] ">Location:</label>
+                            <input type="text" id="type" required class="w-full mt-1 border border-gray-300 rounded-lg px-4 py-2 ">
+                        </div>
+                    </div>
+
+                   
+                    <div class="mb-4">
+                        <label for="ticket-count" class="text-[#981D26] ">No of Tickets:</label>
+                        <input type="number" id="ticket-count" required class="w-full mt-1 border border-gray-300 rounded-lg px-4 py-2 ">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <fieldset class="space-x-2">
+                            <legend class="text-[#981D26]">Seating Types:</legend>
+                                <label class="text-[#981D26]">VIP Seats:</label>
+                                <input type="number" id="VIP-count" required class="w-[25%] mt-1 border border-gray-300 rounded-lg px-4 py-2 ">
+                                <label class="text-[#981D26]">Standard Seats:</label>
+                                <input type="number" id="Standard-count" required class="w-[25%] mt-1 border border-gray-300 rounded-lg px-4 py-2 ">
+                        </fieldset>
+                    </div>
+
+                    <div class="flex  gap-4 mb-4">
+                        <div class="w-full sm:w-1/2">
+                            <label for="date" class="text-[#981D26]">Date:</label>
+                            <input type="date" id="date" required class="w-[33%] mt-1 border border-gray-300 rounded-lg px-4 py-2 ">
+                        </div>
+                        <div class="w-full sm:w-1/2">
+                            <label for="time" class="text-[#981D26]">Time:</label>
+                            <input type="time" id="time" required class="w-[33%] mt-1 border border-gray-300 rounded-lg px-4 py-2 ">
+                        </div>
+                        <div class=" sm:w-1/2">
+                            <label for="price" class="text-[#981D26]">Price:</label>
+                            <input type="number" id="price" required class="w-[33%] mt-1 border border-gray-300 rounded-lg px-4 py-2 ">
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" class="bg-[#500E10] text-[#F59B9E] font-medium py-2 px-6 rounded-lg hover:bg-[#977073] hover:text-white">
+                            <a href="dashboard.html">Add Event</a>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    
+    <footer class="bg-[#500E10] py-4 ">
+        <div class="text-center text-[#F59B9E]">
+            <p class="text-sm md:text-lg">&copy; 2025 Dancing Leaf. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
