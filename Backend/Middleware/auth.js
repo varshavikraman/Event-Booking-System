@@ -12,7 +12,7 @@ if(cookie){
     if(name == 'authToken'){
         const verified=jwt.verify(token,process.env.SECRET_KEY)
         console.log(verified)
-        req.Name = verified.userName;
+        req.Email = verified.email;
         req.Role = verified.userRole;
         next();
     }else{
