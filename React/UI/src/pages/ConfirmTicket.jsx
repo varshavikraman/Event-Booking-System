@@ -1,48 +1,108 @@
-import React from 'react'
-import NavBar from '../components/NavBar'
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import NavBar from '../components/NavBar';
 import logo from '../assets/IMAGE/logo1.jpeg';
-import Footer from '../components/Footer'
+import Footer from '../components/Footer';
 
 const ConfirmTicket = () => {
-  return (
-    <div className="bg-[#F59B9E]">
-    <NavBar />
-    <div className=" mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-32">
-        <div className="w-96 mx-auto bg-white rounded-2xl shadow-lg shadow-[#981D26] p-6">
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [bookingData, setBookingData] = useState(location.state || {}); // Initial state from navigation
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-                <div className="text-center mb-4">
-                    <img src={logo} alt="logo" className="w-12 h-12"/>  
+    useEffect(() => {
+        if (!bookingData || Object.keys(bookingData).length === 0) {
+            fetchBookingData();
+        } else {
+            setLoading(false);
+        }
+    }, []);
+
+    const fetchBookingData = async () => {
+        try {
+            const response = await fetch("/api/getBooking", {
+                method: "GET",
+                credentials: "include",
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch booking details.");
+            }
+
+            const data = await response.json();
+            setBookingData(data);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="bg-[#F59B9E] min-h-screen">
+            <NavBar />
+            <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-32">
+                <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg shadow-[#981D26] p-6">
+                    <div className="text-center mb-4">
+                        <img src={logo} alt="logo" className="w-16 h-16 mx-auto" />
+                    </div>
+
+                    <h2 className="text-[#981D26] text-2xl sm:text-3xl font-medium text-center mb-6">
+                        Ticket Booking Successful!
+                    </h2>
+
+                    {loading ? (
+                        <p className="text-center text-gray-700">Loading booking details...</p>
+                    ) : error ? (
+                        <p className="text-center text-red-600">{error}</p>
+                    ) : (
+                        <div className="space-y-4">
+                            <div className="flex justify-between">
+                                <label className="text-[#981D26] font-medium">Name:</label>
+                                <p>{bookingData.name || "N/A"}</p>
+                            </div>
+
+                            <div className="flex justify-between">
+                                <label className="text-[#981D26] font-medium">Email:</label>
+                                <p>{bookingData.email || "N/A"}</p>
+                            </div>
+
+                            <div className="flex justify-between">
+                                <label className="text-[#981D26] font-medium">Phone No:</label>
+                                <p>{bookingData.phoneNo || "N/A"}</p>
+                            </div>
+
+                            <div className="flex justify-between">
+                                <label className="text-[#981D26] font-medium">Event Name:</label>
+                                <p>{bookingData.eventName || "N/A"}</p>
+                            </div>
+
+                            <div className="flex justify-between">
+                                <label className="text-[#981D26] font-medium">Seating Type:</label>
+                                <p>{bookingData.seatingType || "N/A"}</p>
+                            </div>
+
+                            <div className="flex justify-between">
+                                <label className="text-[#981D26] font-medium">No. of Tickets:</label>
+                                <p>{bookingData.noOfTickets || "N/A"}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="text-center mt-6">
+                        <button 
+                            onClick={() => navigate('/home')} 
+                            className="bg-[#500E10] text-[#F59B9E] font-medium py-2 px-6 rounded-lg hover:bg-[#977073] hover:text-white"
+                        >
+                            Back to Home
+                        </button>
+                    </div>
                 </div>
-
-                <h2 className="text-[#981D26] text-2xl sm:text-3xl font-medium text-center mb-6">Ticket Booking Successful !</h2>
-
-
-                <div className="ml-20 mb-4 flex space-x-4">
-                    <label for="name" className="text-[#981D26] block">Name:</label><p>Abc</p>
-                </div>
-
-                <div className="ml-20 mb-4 flex space-x-4">
-                    <label for="email" className="text-[#981D26] block">Email:</label><p>abc@gmail.com</p>
-                </div>
-
-                <div className="ml-20 mb-4 flex space-x-4">
-                    <label for="phone" className="text-[#981D26] block">Phone No:</label><p>7685943210</p>
-                </div>
-
-                <div className="ml-20 mb-4 flex space-x-4">
-                    <label for="phone" className="text-[#981D26] block">No of Ticket:</label><p>2</p>
-                </div>
-
-                <div className="ml-20 mb-4 flex space-x-4">
-                    <label for="phone" className="text-[#981D26] block">Seating Type:</label><p>Standard</p>
-                </div>
-
-
+            </div>
+            <Footer />
         </div>
-    </div>
-    <Footer/>
-    </div>
-  )
-}
+    );
+};
 
-export default ConfirmTicket
+export default ConfirmTicket;

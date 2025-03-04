@@ -16,7 +16,7 @@ const convertToBase64 = (buffer) => {
 adminRoute.post('/addEvent',authenticate,adminCheck,upload.single("EventImage"),async(req,res)=>{
     try{
         const {Eventname,Organizer,Description,Venue,Location,NoOfTickets,VIPSeats,StandardSeats,Date,Time,Price} = req.body;
-        const activeEvent = await event.findOne({eventName:Eventname,});
+        const activeEvent = await event.findOne({eventName:Eventname});
         if(activeEvent){
             res.status(400).json({msg :`${Eventname} already exist`});
         }else{
