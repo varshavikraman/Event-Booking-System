@@ -9,7 +9,7 @@ const DashNav = () => {
     <nav className="flex flex-col space-y-4 text-center md:text-left">
         
         <Link to="/dashboard" className="text-[#F59B9E] text-lg font-medium hover:text-white">Event</Link>
-        <Link to="/addEvent" className="text-[#F59B9E] text-lg font-medium hover:text-white">Add Event</Link>
+        <Link to="/add-event" className="text-[#F59B9E] text-lg font-medium hover:text-white">Add Event</Link>
         <Link to="/bookingList" className="text-[#F59B9E] text-lg font-medium hover:text-white">Booking</Link>
         <Link to="/landing" className="text-[#F59B9E] text-lg font-medium hover:text-white">Sign Out</Link>
     </nav>

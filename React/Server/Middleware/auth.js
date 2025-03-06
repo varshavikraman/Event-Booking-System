@@ -12,8 +12,10 @@ if(cookie){
     if(name == 'authToken'){
         const verified=jwt.verify(token,process.env.SECRET_KEY)
         console.log(verified)
-        req.Email = verified.email;
+        req.user_id=verified._id;
+        req.Email = verified.eMail;
         req.Role = verified.userRole;
+        
         next();
     }else{
         res.status(401).send("Unauthorized Access");

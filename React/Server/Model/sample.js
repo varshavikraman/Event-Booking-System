@@ -29,11 +29,13 @@ const event = model('eventDetail',sample2);
 const sample3 = new Schema({
     name:{type:String,required:true,},
     eMail:{type:String,required:true},
-    phoneNo:{type:Number,required:true},
+    phoneNo:{ type: String, required: true },
     eventName:{type:String,required:true},
     seatingType:{type:String,required:true},
-    No_OfTicket:{type:Number,required:true}
+    No_OfTicket:{type:Number,required:true},
+    price:{type:Number,required:true}
 });
+sample3.index({ eMail: 1, eventName: 1 }, { unique: true });
 const ticket = model('ticketDetails',sample3)
 
 const sample4 = new Schema({

@@ -7,7 +7,7 @@ import Footer from '../components/Footer';
 const ConfirmTicket = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const [bookingData, setBookingData] = useState(location.state || {}); // Initial state from navigation
+    const [bookingData, setBookingData] = useState(location.state || {}); 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -25,20 +25,20 @@ const ConfirmTicket = () => {
                 method: "GET",
                 credentials: "include",
             });
-
+    
             if (!response.ok) {
                 throw new Error("Failed to fetch booking details.");
             }
-
+    
             const data = await response.json();
-            setBookingData(data);
+            setBookingData(data); // ✅ Ensure correct data is set
         } catch (err) {
             setError(err.message);
         } finally {
             setLoading(false);
         }
     };
-
+    
     return (
         <div className="bg-[#F59B9E] min-h-screen">
             <NavBar />
@@ -65,7 +65,7 @@ const ConfirmTicket = () => {
 
                             <div className="flex justify-between">
                                 <label className="text-[#981D26] font-medium">Email:</label>
-                                <p>{bookingData.email || "N/A"}</p>
+                                <p>{bookingData.eMail || "N/A"}</p>
                             </div>
 
                             <div className="flex justify-between">
@@ -85,7 +85,7 @@ const ConfirmTicket = () => {
 
                             <div className="flex justify-between">
                                 <label className="text-[#981D26] font-medium">No. of Tickets:</label>
-                                <p>{bookingData.noOfTickets || "N/A"}</p>
+                                <p>{bookingData.No_OfTicket || "N/A"}</p> 
                             </div>
                         </div>
                     )}

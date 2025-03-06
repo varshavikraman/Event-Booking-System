@@ -1,152 +1,199 @@
-import React, { useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
 
 const BookTicket = () => {
     const navigate = useNavigate();
-      
-      const [name, setName] = useState("");
-      const [email, setEmail] = useState("");
-      const [phoneNo, setPhoneNo] = useState("");
-      const [eventName] = useParams();
-      const [seatingType, setSeatingType] = useState("Standard");
-      const [noOfTickets, setNoOfTickets] = useState("1");
+    const { eventName } = useParams();
 
-      const handleSubmit = async (e) => {
+    const [user, setUser] = useState({
+        name: '',
+        email: '',
+        phoneNo: ''
+    });
+
+    const [seatingType, setSeatingType] = useState("Standard");
+    const [noOfTickets, setNoOfTickets] = useState(1);
+    const [standardPrice, setStandardPrice] = useState(null);
+    const [loadingPrice, setLoadingPrice] = useState(true);
+
+    // Fetch user details when component mounts
+    useEffect(() => {
+        const fetchUserDetails = async () => {
+            try {
+                const res = await fetch('/api/getUser', { credentials: "include" });
+                if (!res.ok) throw new Error("Failed to fetch user details");
+
+                const data = await res.json();
+                setUser({
+                    name: data.name || '',
+                    email: data.eMail || '',
+                    phoneNo: data.phoneNo || ''
+                });
+            } catch (error) {
+                console.error("Error fetching user details:", error);
+            }
+        };
+
+        fetchUserDetails();
+    }, []);
+
+    // Fetch event price from backend
+    useEffect(() => {
+        const fetchEventPrice = async () => {
+            try {
+                const res = await fetch(`/api/getEventPrice/${eventName}`);
+                if (!res.ok) throw new Error("Failed to fetch event price");
+    
+                const data = await res.json();
+                console.log("Event Price Data:", data); // Debugging line
+                setStandardPrice(data.standardPrice || 0); // Ensure fallback value
+                setLoadingPrice(false);
+            } catch (error) {
+                console.error("Error fetching event price:", error);
+                setLoadingPrice(false);
+            }
+        };
+    
+        fetchEventPrice();
+    }, [eventName]);
+
+    // Calculate price based on seating type
+    const calculateTotalPrice = () => {
+        if (loadingPrice || standardPrice === null) return "N/A"; // Prevent incorrect display
+        const pricePerSeat = seatingType === "VIP" ? standardPrice * 1.5 : standardPrice;
+        return pricePerSeat * noOfTickets;
+    };
+
+    const handleSubmit = (e) => {
         e.preventDefault();
-        try {
-          const formData = new FormData();
-          formData.append("Name", name);
-          formData.append("Email", email);
-          formData.append("PhoneNo", phoneNo);
-          formData.append("EventName", eventName);
-          formData.append("SeatingType", seatingType);
-          formData.append("NoOfTickets", noOfTickets);
+    };
 
-
-          const res = await fetch("/api/bookTicket", {
-            method: "POST",
-            credentials: "include",
-            body: formData,
-          });
+    const handleProceedToPayment = () => {
+        navigate('/payment', {
+            state: {
+                    Name: user.name,
+                    Email: user.email,
+                    PhoneNo: user.phoneNo,
+                    EventName: eventName,
+                    SeatingType: seatingType,
+                    NoOfTicket: noOfTickets,
+                    Price: calculateTotalPrice()  // 🔥 Add Price here
+                }
+            });
+        };
     
-          if (!res.ok) {
-            throw new Error("Error adding event");
-          }
-    
-          alert("Ticket Booked successfully!");
-          navigate('/confirmation');
-    
-        } catch (err) {
-          console.error(err);
-          alert("Something went wrong: " + err.message);
-        }
-      };
-  return (
-    <div className="bg-[#F59B9E]">
-        <NavBar />
-        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-32">
-            <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-lg shadow-[#981D26] p-6">
-                <h2 className="text-[#981D26] text-2xl sm:text-3xl font-medium text-center mb-6">
-                    Book Ticket
-                </h2>
+    return (
+        <div className="bg-[#F59B9E]">
+            <NavBar />
+            <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-32">
+                <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-lg shadow-[#981D26] p-6">
+                    <h2 className="text-[#981D26] text-2xl sm:text-3xl font-medium text-center mb-6">
+                        Book Ticket
+                    </h2>
 
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
-                        <label  className="text-[#981D26] block">Name:</label>
-                        <input 
-                            ttype="text" 
-                            name="name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            required 
-                            className="w-full mt-1 border border-gray-300 rounded-lg px-4 py-2"
-                        />
-                    </div>
-
-                    <div className="mb-4">
-                        <label className="text-[#981D26] block">Email:</label>
-                        <input 
-                            ype="email" 
-                            name="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required 
-                            className="w-full mt-1 border border-gray-300 rounded-lg px-4 py-2"
-                        />
-                    </div>
-
-                    <div className="mb-4">
-                        <label className="text-[#981D26] block">Phone No:</label>
-                        <input 
-                            type="text" 
-                            name="phoneNo"
-                            value={phoneNo}
-                            onChange={(e) => setPhoneNo(e.target.value)}
-                            required 
-                            className="w-full mt-1 border border-gray-300 rounded-lg px-4 py-2"
-                        />
-                    </div>
-
-                    <div className="mb-4">
-                        <label className="text-[#981D26] block">Event Name:</label>
-                        <input 
-                            type="text"
-                            name="eventName" 
-                            value={eventName} 
-                            readOnly 
-                            className="w-full mt-1 border border-gray-300 rounded-lg px-4 py-2 bg-gray-100"
-                        />
-                    </div>
-
-                    <div className="flex mb-4 space-x-20">
-                        <div>
-                            <label className="text-[#981D26]">Seating Type:</label>
-                            <br />
-                            <select 
-                                name="seatingType"
-                                value={seatingType}
-                                onChange={(e) => setSeatingType(e.target.value)}
-                                className="w-20 mt-1 bg-white border border-gray-300 rounded-lg px-4 py-2"
-                            >
-                                <option value="VIP">VIP</option>
-                                <option value="Standard">Standard</option>
-                            </select>
+                    <form onSubmit={handleSubmit}>
+                        <div className="mb-4">
+                            <label className="text-[#981D26] block">Name:</label>
+                            <input 
+                                type="text" 
+                                name="name"
+                                value={user.name}
+                                onChange={(e) => setUser({...user, name: e.target.value})}
+                                className="w-full mt-1 border border-gray-300 rounded-lg px-4 py-2 bg-white"
+                            />
                         </div>
-                        <div>
-                            <label className="text-[#981D26]">No of Ticket:</label>
-                            <br />
-                            <select 
-                                name="noOfTickets"
-                                value={noOfTickets}
-                                onChange={(e) => setNoOfTickets(e.target.value)}
-                                className="w-20 mt-1 bg-white border border-gray-300 rounded-lg px-4 py-2"
-                            >
-                                {[...Array(6).keys()].map(n => (
-                                    <option key={n+1} value={n+1}>{n+1}</option>
-                                ))}
 
-                            </select>
-                        </div>  
-                    </div>
+                        <div className="mb-4">
+                            <label className="text-[#981D26] block">Email:</label>
+                            <input 
+                                type="email" 
+                                name="email"
+                                value={user.email}
+                                onChange={(e) => setUser({...user, email: e.target.value})}
+                                className="w-full mt-1 border border-gray-300 rounded-lg px-4 py-2 bg-white"
+                            />
+                        </div>
 
-                    <div className="text-center">
-                        <Link to="/confirmation">
-                            <button 
-                                type="submit" 
+                        <div className="mb-4">
+                            <label className="text-[#981D26] block">Phone No:</label>
+                            <input 
+                                type="text" 
+                                name="phoneNo"
+                                value={user.phoneNo}
+                                onChange={(e) => setUser({...user, phoneNo: e.target.value})}
+                                className="w-full mt-1 border border-gray-300 rounded-lg px-4 py-2 bg-white"
+                            />
+                        </div>
+
+                        <div className="mb-4">
+                            <label className="text-[#981D26] block">Event Name:</label>
+                            <input 
+                                type="text"
+                                name="eventName" 
+                                value={eventName} 
+                                readOnly 
+                                className="w-full mt-1 border border-gray-300 rounded-lg px-4 py-2 bg-gray-100"
+                            />
+                        </div>
+
+                        <div className="flex mb-4 space-x-20">
+                            <div>
+                                <label className="text-[#981D26]">Seating Type:</label>
+                                <br />
+                                <select 
+                                    name="seatingType"
+                                    value={seatingType}
+                                    onChange={(e) => setSeatingType(e.target.value)}
+                                    className="w-20 mt-1 bg-white border border-gray-300 rounded-lg px-4 py-2"
+                                >
+                                    <option value="VIP">VIP</option>
+                                    <option value="Standard">Standard</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-[#981D26]">No of Ticket:</label>
+                                <br />
+                                <select 
+                                    name="noOfTickets"
+                                    value={noOfTickets}
+                                    onChange={(e) => setNoOfTickets(parseInt(e.target.value))}
+                                    className="w-20 mt-1 bg-white border border-gray-300 rounded-lg px-4 py-2"
+                                >
+                                    {[...Array(6).keys()].map(n => (
+                                        <option key={n+1} value={n+1}>{n+1}</option>
+                                    ))}
+                                </select>
+                            </div>  
+                        </div>
+
+                        {/* Price Label Inside Input */}
+                        <div className="mb-4">
+                        <label className="text-[#981D26] block font-medium">Total Price:</label>
+                        <input
+                            type="text"
+                            value={loadingPrice ? "Fetching..." : `₹${calculateTotalPrice() !== "N/A" ? calculateTotalPrice() : 0}`}
+                            readOnly
+                            className="w-full mt-1 border border-gray-300 rounded-lg px-4 py-2 bg-gray-100 font-semibold text-[#981D26]"
+                        />
+                        </div>
+
+
+                        <div className="text-center">
+                        <button 
+                                onClick={handleProceedToPayment}
                                 className="bg-[#500E10] text-[#F59B9E] font-medium py-2 px-6 rounded-lg hover:bg-[#977073] hover:text-white"
                             >
-                                Book Now
+                                Proceed to Payment
                             </button>
-                        </Link>
-                    </div>
-                </form>
+                        </div>
+                    </form>
+                </div>
             </div>
+            <Footer />
         </div>
-        <Footer />
-    </div>
-  )
+    );
 }
 
-export default BookTicket
+export default BookTicket;

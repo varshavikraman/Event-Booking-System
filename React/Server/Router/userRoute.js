@@ -49,7 +49,7 @@ userRoute.post('/signin',async(req,res)=>{
             const valid = await bcrypt.compare(Password,result.password);
             console.log(valid);
             if(valid){
-                const token = jwt.sign({eMail:Email,userRole:result.userRole},process.env.SECRET_KEY,{expiresIn:'1h'});
+                const token = jwt.sign({ _id: result._id,eMail:Email,userRole:result.userRole},process.env.SECRET_KEY,{expiresIn:'1h'});
                 console.log(token);
                 res.cookie('authToken',token,
                     {
