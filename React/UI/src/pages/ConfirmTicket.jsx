@@ -7,15 +7,16 @@ import Footer from '../components/Footer';
 const ConfirmTicket = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const [bookingData, setBookingData] = useState(location.state || {}); 
-    const [loading, setLoading] = useState(true);
+
+    // Extract booking data properly
+    const initialBookingData = location.state?.booking || {}; 
+    const [bookingData, setBookingData] = useState(initialBookingData);
+    const [loading, setLoading] = useState(!location.state?.booking);
     const [error, setError] = useState("");
 
     useEffect(() => {
-        if (!bookingData || Object.keys(bookingData).length === 0) {
+        if (!location.state?.booking) {
             fetchBookingData();
-        } else {
-            setLoading(false);
         }
     }, []);
 
@@ -31,14 +32,14 @@ const ConfirmTicket = () => {
             }
     
             const data = await response.json();
-            setBookingData(data); // ✅ Ensure correct data is set
+            setBookingData(data.booking);  // Ensure data is extracted correctly
         } catch (err) {
             setError(err.message);
         } finally {
             setLoading(false);
         }
     };
-    
+
     return (
         <div className="bg-[#F59B9E] min-h-screen">
             <NavBar />
@@ -58,35 +59,13 @@ const ConfirmTicket = () => {
                         <p className="text-center text-red-600">{error}</p>
                     ) : (
                         <div className="space-y-4">
-                            <div className="flex justify-between">
-                                <label className="text-[#981D26] font-medium">Name:</label>
-                                <p>{bookingData.name || "N/A"}</p>
-                            </div>
-
-                            <div className="flex justify-between">
-                                <label className="text-[#981D26] font-medium">Email:</label>
-                                <p>{bookingData.eMail || "N/A"}</p>
-                            </div>
-
-                            <div className="flex justify-between">
-                                <label className="text-[#981D26] font-medium">Phone No:</label>
-                                <p>{bookingData.phoneNo || "N/A"}</p>
-                            </div>
-
-                            <div className="flex justify-between">
-                                <label className="text-[#981D26] font-medium">Event Name:</label>
-                                <p>{bookingData.eventName || "N/A"}</p>
-                            </div>
-
-                            <div className="flex justify-between">
-                                <label className="text-[#981D26] font-medium">Seating Type:</label>
-                                <p>{bookingData.seatingType || "N/A"}</p>
-                            </div>
-
-                            <div className="flex justify-between">
-                                <label className="text-[#981D26] font-medium">No. of Tickets:</label>
-                                <p>{bookingData.No_OfTicket || "N/A"}</p> 
-                            </div>
+                            <p><strong>Name:</strong> {bookingData.Name || "N/A"}</p>
+                            <p><strong>Email:</strong> {bookingData.Email || "N/A"}</p>
+                            <p><strong>Phone No:</strong> {bookingData.PhoneNo || "N/A"}</p>
+                            <p><strong>Event Name:</strong> {bookingData.EventName || "N/A"}</p>
+                            <p><strong>Seating Type:</strong> {bookingData.SeatingType || "N/A"}</p>
+                            <p><strong>No. of Tickets:</strong> {bookingData.NoOfTicket || "N/A"}</p>
+                            <p className="text-lg font-bold"><strong>Total Price:</strong> ₹{bookingData.Price || "N/A"}</p>
                         </div>
                     )}
 

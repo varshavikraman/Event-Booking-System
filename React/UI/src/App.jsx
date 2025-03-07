@@ -10,6 +10,8 @@ import AddEvent from './pages/AddEvent';
 import BookTicket from './pages/BookTicket';
 import Payment from './pages/Payment';
 import ConfirmTicket from './pages/ConfirmTicket';
+import BookedTickets from './pages/Ticket';
+import Signout from './components/Signout';
 
 const App = () => {
   
@@ -26,6 +28,8 @@ const App = () => {
         <Route path="/book/:eventName" element={<BookTicket />} />
         <Route path="/payment" element={<Payment />} />
         <Route path="/confirm" element={<ConfirmTicket />} />
+        <Route path="/booked-tickets" element={<BookedTickets />} />
+        <Route path="/signout" element={<Signout />} />
 
         {/* 404 Page */}
         <Route path="*" element={<h1 className='text-[#981D26] text-center text-5xl mt-80'>404 - Page Not Found</h1>} />

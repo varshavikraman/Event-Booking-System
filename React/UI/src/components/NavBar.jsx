@@ -17,9 +17,9 @@ const NavBar = () => {
             </div>
             
             <nav className="flex flex-wrap justify-center md:justify-end space-x-4 md:space-x-6 mt-4 md:mt-0 w-full md:w-auto"> 
-                <Link to="ticket.html" className="text-[#F59B9E] text-sm md:text-lg font-medium hover:text-white">Find My Ticket</Link>
+                <Link to="/booked-tickets" className="text-[#F59B9E] text-sm md:text-lg font-medium hover:text-white">Find My Ticket</Link>
                 <Link to="profile.html" className="text-[#F59B9E] text-sm md:text-lg font-medium hover:text-white">My Profile</Link>
-                <Link to="landing.html" className="text-[#F59B9E] text-sm md:text-lg font-medium hover:text-white">Sign Out</Link>
+                <Link to="/signout" className="text-[#F59B9E] text-sm md:text-lg font-medium hover:text-white">Sign Out</Link>
             </nav>
         </div>
     </header>

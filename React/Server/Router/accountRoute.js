@@ -106,8 +106,8 @@ accountRoute.post('/bookTicket', authenticate, async (req, res) => {
             },
             { 
                 $inc: { 
-                    No_of_Tickets: -NoOfTicket,  // Reduce total tickets
-                    [seatField]: -NoOfTicket  // Reduce specific seat type tickets
+                    No_of_Tickets: -NoOfTicket,  
+                    [seatField]: -NoOfTicket 
                 } 
             },
             { new: true }
@@ -117,15 +117,27 @@ accountRoute.post('/bookTicket', authenticate, async (req, res) => {
             return res.status(400).json({ msg: "Not enough tickets available" });
         }
 
-        res.status(201).send("Your ticket has been booked successfully");
-        console.log(newTicket);
+        // Send structured response
+        res.status(200).json({ 
+            message: "Your ticket is booked successfully!", 
+            booking: {
+                Name: newTicket.name,
+                Email: newTicket.eMail,
+                PhoneNo: newTicket.phoneNo,
+                EventName: newTicket.eventName,
+                SeatingType: newTicket.seatingType,
+                NoOfTicket: newTicket.No_OfTicket,
+                Price: newTicket.price
+            }
+        });
+
+        console.log("Booking Confirmed:", newTicket);
 
     } catch (error) {
-        console.error(error);
-        res.status(500).send("Internal Server Error");
+        console.error("Booking Error:", error);
+        res.status(500).json({ msg: "Internal Server Error", error: error.message });
     }
 });
-
 
 accountRoute.get('/getEventPrice/:eventName', authenticate, async (req, res) => {
     try {
@@ -147,10 +159,13 @@ accountRoute.get('/getEventPrice/:eventName', authenticate, async (req, res) => 
 
 accountRoute.get('/getBooking', authenticate, async (req, res) => {
   try {
+    console.log("hi")
       const userEmail = req.Email; // Extracting email from authenticated user
-
+        
+      console.log("useremail:",userEmail);
+      
       const bookings = await ticket.find({ eMail: userEmail }); // Fetch bookings
-
+      console.log("Fetched Bookings:", bookings);    
       if (!bookings.length) {
           return res.status(404).json({ msg: "No bookings found" });
       }
@@ -162,14 +177,49 @@ accountRoute.get('/getBooking', authenticate, async (req, res) => {
   }
 });
 
+accountRoute.get("/getUserTickets", authenticate, async (req, res) => {
+    try {
+        const userEmail = req.Email; // Get user email from the authentication token
+        console.log("User Email:", userEmail); // Debugging
+
+        const tickets = await ticket.aggregate([
+            {
+                $match: { eMail: userEmail } // Find user's tickets
+            },
+            {
+                $lookup: {
+                    from: "eventdetails", // MongoDB collection name (ensure lowercase & pluralized correctly)
+                    localField: "eventName",
+                    foreignField: "eventName",
+                    as: "eventDetails"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$eventDetails",
+                    preserveNullAndEmptyArrays: true // Ensure tickets without matching events don't break the response
+                }
+            }
+        ]);
+
+        console.log("Tickets Found:", tickets); // Debugging
+
+        res.status(200).json(tickets);
+    } catch (error) {
+        console.error("Error retrieving tickets:", error);
+        res.status(500).json({ message: "Error retrieving tickets" });
+    }
+});
+
 
 accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
   try {
       const { EventName } = req.body;
-      console.log(EventName);
+      const userEmail = req.Email;
+      console.log("Cancel Request:",{EventName,userEmail});
 
       // Find the ticket
-      const ticketData = await ticket.findOne({ eventName: EventName });
+      const ticketData = await ticket.findOne({ eventName: EventName, eMail: userEmail });
 
       if (!ticketData) {
           return res.status(404).json({ msg: "Ticket doesn't exist" });
@@ -178,7 +228,7 @@ accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
       const noOfCanceledTickets = ticketData.No_OfTicket; // Get the number of tickets booked
 
       // Delete the ticket
-      await ticket.findOneAndDelete({ eventName: EventName });
+      await ticket.findOneAndDelete({ eventName: EventName, eMail: userEmail });
 
       // Increase the available tickets in event details
       await event.updateOne({ eventName: EventName }, { $inc: { No_of_Tickets: noOfCanceledTickets } });

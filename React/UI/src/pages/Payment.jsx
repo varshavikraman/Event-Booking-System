@@ -8,7 +8,7 @@ const Payment = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Extract payment details from state (ensure values are properly passed)
+    // Extract payment details from state
     const { 
         Name, 
         Email, 
@@ -19,7 +19,8 @@ const Payment = () => {
         Price 
     } = location.state || {}; 
 
-    // Ensure the price is correctly displayed (fallback to avoid `undefined`)
+    console.log("Location State:", location.state);
+
     const totalAmount = Price !== undefined ? Price : "N/A"; 
 
     const [loading, setLoading] = useState(false);
@@ -37,22 +38,26 @@ const Payment = () => {
                     credentials: "include",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        Name: Name,
-                        Email: Email,
-                        PhoneNo: PhoneNo,
-                        EventName: EventName,
-                        SeatingType: SeatingType,
-                        NoOfTicket: NoOfTicket,
-                        Price: Price  
+                        Name,
+                        Email,
+                        PhoneNo,
+                        EventName,
+                        SeatingType,
+                        NoOfTicket,
+                        Price  
                     }),
                 });
 
                 if (!res.ok) throw new Error("Payment failed");
 
+                const bookingData = await res.json(); // Get response data
+                
                 setMessage("Payment successful!");
-                navigate('/confirm', { state: location.state });
+                
+                navigate('/confirm', { state: bookingData }); // Pass booking details
 
             } catch (error) {
+                console.error("the error is",error)
                 setMessage("Payment failed. Please try again.");
             } finally {
                 setLoading(false);
@@ -68,7 +73,7 @@ const Payment = () => {
         setTimeout(() => {
             setMessage("Payment cancelled.");
             setLoading(false);
-            navigate('/');
+            navigate(`/book/${EventName}`);
         }, 2000); 
     };
 
@@ -88,10 +93,19 @@ const Payment = () => {
                         Booking Payment
                     </h2>
 
-                    {/* Payment Amount */}
-                    <p className="text-gray-700 text-lg font-semibold mb-4">
-                        Amount to Pay: <span className="text-[#500E10]">₹{totalAmount}</span>
-                    </p>
+                    {/* Booking Summary */}
+                    <div className="bg-gray-100 p-4 rounded-lg shadow-md text-left mb-4">
+                        <h3 className="text-[#981D26] text-xl font-semibold mb-2">Booking Details</h3>
+                        <p><strong>Name:</strong> {Name}</p>
+                        <p><strong>Email:</strong> {Email}</p>
+                        <p><strong>Phone No:</strong> {PhoneNo}</p>
+                        <p><strong>Event Name:</strong> {EventName}</p>
+                        <p><strong>Seating Type:</strong> {SeatingType}</p>
+                        <p><strong>Tickets:</strong> {NoOfTicket}</p>
+                        <p className="text-lg font-bold mt-2">
+                            Total Price: <span className="text-[#500E10]">₹{totalAmount}</span>
+                        </p>
+                    </div>
 
                     {/* Dynamic Message */}
                     {message && (
