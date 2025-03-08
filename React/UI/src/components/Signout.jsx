@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -8,13 +8,14 @@ const Signout = () => {
   const handleSignout = async () => {
     try {
       const res = await fetch("/api/signout", {
-        method: "GET", // Explicitly defining the method
-        credentials: "include", // Ensures cookies are handled
+        method: "GET",
+        credentials: "include",
       });
 
       if (res.ok) {
         toast.success("Signout successful");
-        navigate("/");
+
+        navigate("/", { replace: true });
       } else {
         toast.error("Failed to sign out");
       }
@@ -23,7 +24,11 @@ const Signout = () => {
     }
   };
 
-  return <button onClick={handleSignout}>Signout</button>;
+  useEffect(() => {
+    handleSignout();
+  }, []);
+
+  return <p>Signing out...</p>;
 };
 
 export default Signout;

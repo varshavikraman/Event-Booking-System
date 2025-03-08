@@ -5,9 +5,11 @@ import Footer from '../components/Footer'
 
 const Ticket = () => {
   return (
-    <div className="bg-[#F59B9E]">
+    <div className="flex flex-col min-h-screen bg-[#FFCCD5]">
       <NavBar />
-      <TicketGrid isHome={true} />
+      <div className="flex-grow">
+        <TicketGrid isHome={true} />
+      </div>
       <Footer />
     </div>
   )

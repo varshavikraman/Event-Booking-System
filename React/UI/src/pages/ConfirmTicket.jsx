@@ -8,7 +8,6 @@ const ConfirmTicket = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    // Extract booking data properly
     const initialBookingData = location.state?.booking || {}; 
     const [bookingData, setBookingData] = useState(initialBookingData);
     const [loading, setLoading] = useState(!location.state?.booking);
@@ -32,7 +31,7 @@ const ConfirmTicket = () => {
             }
     
             const data = await response.json();
-            setBookingData(data.booking);  // Ensure data is extracted correctly
+            setBookingData(data.booking);  
         } catch (err) {
             setError(err.message);
         } finally {
@@ -41,7 +40,7 @@ const ConfirmTicket = () => {
     };
 
     return (
-        <div className="bg-[#F59B9E] min-h-screen">
+        <div className="bg-[#FFCCD5] min-h-screen">
             <NavBar />
             <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-32">
                 <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg shadow-[#981D26] p-6">

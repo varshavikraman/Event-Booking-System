@@ -78,7 +78,7 @@ const Payment = () => {
     };
 
     return (
-        <div className="bg-[#F59B9E] min-h-screen flex flex-col">
+        <div className="bg-[#FFCCD5] min-h-screen flex flex-col">
             <NavBar />
             <div className="flex-grow flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
                 <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg shadow-[#981D26] p-6 text-center">

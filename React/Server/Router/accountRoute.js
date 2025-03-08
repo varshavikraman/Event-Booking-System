@@ -8,14 +8,19 @@ const accountRoute = Router();
 
 accountRoute.get("/profile", authenticate, async (req, res) => {
   try {
-      const email = req.user.email; 
-      const userProfile = await user.findOne({ eMail: email }, "-password");
+      const Email = req.Email; 
+      const userProfile = await user.findOne({ eMail: Email }).select("-password");
 
       if (!userProfile) {
           return res.status(404).json({ message: "Profile not found" });
       }
 
-      res.status(200).json(userProfile);
+      res.status(200).json({
+        Name: userProfile.name,  // Ensure the correct field names
+        Email: userProfile.eMail, 
+        PhoneNo: userProfile.phoneNo || "",
+        UserRole: userProfile.userRole
+    });
   } catch (error) {
       console.error("Error fetching profile:", error);
       res.status(500).json({ message: "Internal Server Error" });
@@ -24,24 +29,33 @@ accountRoute.get("/profile", authenticate, async (req, res) => {
   
 accountRoute.patch('/editProfile', authenticate, async (req, res) => {
     try {
-      const {Name,Email,PhoneNo} = req.body;
-  
+        const { Name, PhoneNo, Email } = req.body;
+
         const updatedProfile = await user.findOneAndUpdate(
-            {eMail: Email},
-            {Name, PhoneNo},
-            {new: true}
+            { eMail: Email }, // Ensure field name matches MongoDB
+            { $set: { name: Name, phoneNo: PhoneNo } },
+            { new: true }
         );
-  
-        if (updatedProfile) {
-            res.status(200).json({ msg: 'Profile updated successfully', result: updatedProfile });
-        }else{
-            res.status(404).json({ msg: "Profile not found" });
+
+        if (!updatedProfile) {
+            return res.status(404).json({ msg: "Profile not found" });
         }
-    }
-    catch {
-      res.status(500).send("Internal Server Error");
+
+        res.status(200).json({ 
+            msg: 'Profile updated successfully', 
+            result: {
+                Name: updatedProfile.name,  // Match frontend expectations
+                Email: updatedProfile.eMail, 
+                PhoneNo: updatedProfile.phoneNo, 
+                UserRole: updatedProfile.userRole
+            }
+        });
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        res.status(500).send("Internal Server Error");
     }
 });
+
 
 // Route to retrieve user details
 accountRoute.get('/getUser', authenticate, async (req, res) => {
@@ -213,33 +227,88 @@ accountRoute.get("/getUserTickets", authenticate, async (req, res) => {
 
 
 accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
-  try {
-      const { EventName } = req.body;
-      const userEmail = req.Email;
-      console.log("Cancel Request:",{EventName,userEmail});
+
+    try {
+        const { EventName } = req.body;
+        const userEmail = req.Email;
+        console.log("Cancel Request:",{EventName,userEmail});
 
       // Find the ticket
-      const ticketData = await ticket.findOne({ eventName: EventName, eMail: userEmail });
+        const ticketData = await ticket.findOne({ eventName: EventName, eMail: userEmail });
 
-      if (!ticketData) {
+        if (!ticketData) {
           return res.status(404).json({ msg: "Ticket doesn't exist" });
-      }
+        }
 
-      const noOfCanceledTickets = ticketData.No_OfTicket; // Get the number of tickets booked
+        const noOfCanceledTickets = ticketData.No_OfTicket; // Get the number of tickets booked
 
       // Delete the ticket
-      await ticket.findOneAndDelete({ eventName: EventName, eMail: userEmail });
+        await ticket.findOneAndDelete({ eventName: EventName, eMail: userEmail });
 
       // Increase the available tickets in event details
-      await event.updateOne({ eventName: EventName }, { $inc: { No_of_Tickets: noOfCanceledTickets } });
+        await event.updateOne({ eventName: EventName }, { $inc: { No_of_Tickets: noOfCanceledTickets } });
 
-      res.status(200).json({ msg: "Ticket canceled successfully" });
-  } catch (error) {
+        res.status(200).json({ msg: "Ticket canceled successfully" });
+    } catch (error) {
       console.error(error);
       res.status(500).send("Internal Server Error");
-  }
+    }
 });
 
+accountRoute.get('/searchEvent', async (req, res) => {
+    try {
+        const { searchValue } = req.query;
+        if (!searchValue) {
+            return res.status(400).json({ message: "Query parameter is required" });
+        }
+
+        const searchResults = await event.find({
+            $or: [
+                { eventName: { $regex: searchValue, $options: "i" } }, // Case-insensitive search
+                { location: { $regex: searchValue, $options: "i" } },
+                { organizer: { $regex: searchValue, $options: "i" } }
+            ]
+        });
+
+        if (searchResults.length === 0) {
+            return res.status(404).json({ message: "No events found." });
+        }
+
+        res.status(200).json(searchResults);
+    } catch (error) {
+        console.error("Error searching events:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+
+accountRoute.get("/filterEvents", async (req, res) => {
+
+    const { date, price, location } = req.query;
+    let filter = {};
+
+    if (date) {
+        const parsedDate = new Date(date);
+        if (!isNaN(parsedDate)) {
+            filter.date = parsedDate;
+        }
+    }
+    
+    if (price) {
+        filter.price = Number(price); // Ensure it's a number
+    }
+    
+    if (location) {
+        filter.location = new RegExp(location, "i"); // Case-insensitive search
+    }
+  
+    try {
+      const events = await event.find(filter); 
+      res.json(events);
+    } catch (error) {
+        console.error("Error fetching events:", error);
+        res.status(500).json({ error: "Server Error" });
+    }
+});
 
 export {accountRoute}
 

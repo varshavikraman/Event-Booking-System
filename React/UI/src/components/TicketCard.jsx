@@ -3,10 +3,9 @@ import venue from '../assets/IMAGE/music-circle-svgrepo-com.svg'
 import location from '../assets/IMAGE/location-pin-svgrepo-com.svg'
 import date from '../assets/IMAGE/calendar-date-schedule-svgrepo-com.svg'
 import time from '../assets/IMAGE/time-svgrepo-com.svg'
-import { Link } from "react-router-dom";
 
 
-const TicketCard = ({ ticket }) => {
+const TicketCard = ({ ticket, handleCancel  }) => {
     if (!ticket) {
         return <p className="text-red-500">Error: No ticket data available.</p>;
     }
@@ -47,8 +46,11 @@ const TicketCard = ({ ticket }) => {
             </div>
 
             <div className="flex justify-end">
-                <button className="bg-[#500E10] hover:bg-[#977073] text-[#F59B9E] hover:text-white font-bold py-2 px-4 mt-4 rounded">
-                    <Link to="/cancel-ticket">Cancel</Link> 
+            <button 
+                    className="bg-[#500E10] hover:bg-[#977073] text-[#F59B9E] hover:text-white font-bold py-2 px-4 mt-4 rounded"
+                    onClick={() => handleCancel(ticket.eventName)} // Call cancel function
+                >
+                    Cancel
                 </button>
             </div>
         </div>

@@ -3,33 +3,30 @@ import authenticate from "../Middleware/auth.js";
 import adminCheck from "../Middleware/adminAuth.js";
 import { event } from "../Model/sample.js";
 import upload from "../Middleware/upload.js";
-import path from "path";
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import { booking } from "../Model/sample.js";
+import sharp from "sharp";
+import { ticket } from "../Model/sample.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const convertToBase64 = (buffer) => {
+    return buffer.toString('base64');
+};
 
 const adminRoute = Router();
 
 adminRoute.post('/addEvent', authenticate, adminCheck, upload.single("EventImage"), async (req, res) => {
     try {
+        console.log("Request Body:", req.body);
+        console.log("Uploaded File:", req.file); // Debugging
+
         const { Eventname, Organizer, Description, Venue, Location, NoOfTickets, VIPSeats, StandardSeats, Date, Time, Price } = req.body;
-        const activeEvent = await event.findOne({ eventName: Eventname });
-
-        if (activeEvent) {
-            return res.status(400).json({ msg: `${Eventname} already exists` });
-        }
-
-        let imageFilename = null;
+        
+        let ImageFile = "";
         if (req.file) {
-            imageFilename = req.file.filename;  // Store filename in DB
+            ImageFile = convertToBase64(req.file.buffer);  // Convert image to base64
         }
 
         const newEvent = new event({
-            image: imageFilename,  // Store only filename, not whole file object
-            eventName: Eventname,
+            image: ImageFile,
+            eventName: Eventname.trim(),
             organizer: Organizer,
             description: Description,
             venue: Venue,
@@ -43,18 +40,20 @@ adminRoute.post('/addEvent', authenticate, adminCheck, upload.single("EventImage
         });
 
         await newEvent.save();
-        res.status(201).json({ msg: `${Eventname} added successfully`, image: imageFilename });
+        res.status(201).json({ msg: `${Eventname} added successfully` });
 
-    }catch (error) {
+    } catch (error) {
         console.error("Error in addEvent:", error);
-        res.status(500).send("Internal Server Error");
+        res.status(500).json({ msg: "Internal Server Error", error: error.message });
     }
 });
+
+
 
 adminRoute.get('/getAllEvents', async (req, res) => {
     try {
         const events = await event.find();
-        console.log("Fetched Events:", events);  // ✅ Log fetched data
+        console.log("Fetched Events:", events); 
         res.json(events);
     } catch (error) {
         console.error("Error fetching events:", error);
@@ -64,57 +63,68 @@ adminRoute.get('/getAllEvents', async (req, res) => {
 
 adminRoute.get('/getEvent', async (req, res) => {
     try {
-      const name = req.query.eventName;
-      console.log("Requested event:", name);
-  
-      const result = await event.findOne({ eventName: name });
-  
-      if (!result) {
-        return res.status(404).json({ msg: "No such event available" });
-      }
-  
-      // Return JSON with event details, including a URL to fetch the image
-      res.status(200).json({
-                imageUrl:`/api/getEventImage?eventName=${encodeURIComponent(name)}`,
-                eventName:result.eventName,
-                organizer:result.organizer,
-                description:result.description,
-                venue:result.venue,
-                location:result.location,
-                No_of_Tickets:result.No_Of_Tickets,
-                vipSeats:result.vipSeats,
-                standardSeats:result.standardSeats,
-                date:result.date,
-                time:result.time,
-                price:result.price
-      });
-  
-    } catch (error) {
-      console.error("Error fetching course:", error);
-      res.status(500).json({ msg: "Internal Server Error" });
-    }
-  })
+        let name = req.query.eventName
+        console.log("Requested event:", `"${name}"`);
 
-  adminRoute.get('/getEventImage', async (req, res) => {
-    try {
-        const eName = req.query.eventName;
-        console.log("Fetching image for event:", eName);
-
-        const eventdetails = await event.findOne({ eventName: eName });
-        if (!eventdetails || !eventdetails.image) {
-            return res.status(404).json({ msg: "No image available for this event" });
+        if (!name) {
+            return res.status(400).json({ msg: "Event name is required" });
         }
 
-        const imagePath = path.join(__dirname, '..', 'uploads', eventdetails.image); // Ensure correct path
+        const result = await event.findOne({ eventName: (`${name}`) }); 
+        if (!result || result.length === 0) {
+            return res.status(404).json({ msg: "No such event available" });
+        }
 
-        res.sendFile(imagePath); // Serve the image file
+        res.status(200).json({
+            imageUrl: `/api/getEventImage?eventName=${encodeURIComponent(name)}`,
+            eventName: result.eventName,
+            organizer: result.organizer,
+            description: result.description,
+            venue: result.venue,
+            location: result.location,
+            No_of_Tickets: result.No_of_Tickets,
+            vipSeats: result.vipSeats,
+            standardSeats: result.standardSeats,
+            date: result.date,
+            time: result.time,
+            price: result.price
+        });
 
     } catch (error) {
-        console.error("Error fetching event image:", error);
-        res.status(500).send("Internal Server Error");
+        console.error("Error fetching event:", error);
+        res.status(500).json({ msg: "Internal Server Error" });
     }
 });
 
+adminRoute.get('/getEventImage', async (req, res) => {
+    try {
+        let eName = req.query.eventName 
+        console.log("Requested Event Name:", `"${eName}"`);
+
+        if (!eName) {
+            return res.status(400).json({ msg: "Event name is required" });
+        }
+
+        const eventDetails = await event.findOne({ eventName: (`${eName}`) });
+
+        if (!eventDetails || !eventDetails.image) {
+            return res.status(404).json({ msg: `No image available for event: ${eName}` });
+        }
+
+        const imageBuffer = Buffer.from(eventDetails.image, "base64");
+
+        res.set({
+            "Content-Type": "image/jpeg",
+            "Content-Disposition": `inline; filename="${encodeURIComponent(eName)}.jpg"`,
+        });
+
+        res.send(imageBuffer);
+
+    } catch (error) {
+        console.error("Error fetching event image:", error.message);
+        res.status(500).json({ msg: "Internal Server Error", error: error.message });
+    }
+});
 
 adminRoute.patch('/editEvent',authenticate,adminCheck,async(req,res)=>{
     try{
@@ -127,7 +137,29 @@ adminRoute.patch('/editEvent',authenticate,adminCheck,async(req,res)=>{
 
                 await result.save();
                 
-                res.status(201).json({msg: `${Eventname} updated successfully`})
+                res.status(200).json({msg: `${Eventname} updated successfully`})
+                console.log(Eventname)
+            }else{
+                res.status(400).json({msg :`${Eventname} doesn't exist`}); 
+            }
+    }
+    catch{
+        res.status(500).send("Internal Sever Error");
+    }
+});
+
+adminRoute.patch('/editEvent',authenticate,adminCheck,async(req,res)=>{
+    try{
+        const {Eventname,Venue,Price} = req.body;
+        const result = await event.findOne({eventName:Eventname,});
+            if(result){
+                result.eventName = Eventname,
+                result.venue = Venue,
+                result.price = Price
+
+                await result.save();
+                
+                res.status(200).json({msg: `${Eventname} updated successfully`})
                 console.log(Eventname)
             }else{
                 res.status(400).json({msg :`${Eventname} doesn't exist`}); 
@@ -156,96 +188,13 @@ adminRoute.delete('/deleteEvent',authenticate,adminCheck,async(req,res)=>{
 
 })
     
-adminRoute.post('/bookingDetails', authenticate, adminCheck, async (req, res) => {
+adminRoute.get('/bookings', authenticate, adminCheck, async (req, res) => {
     try {
-      const { Eventname, Organizer, Eventdate, TotalSeats, VIPSeats, StandardSeats } = req.body;
-  
-      const existingBooking = await booking.findOne({ eventName: Eventname });
-      if (existingBooking) {
-        return res.status(400).json({ msg: "Booking details for this event already exist." });
-      }
-  
-      const newBooking = new booking({
-        eventName: Eventname,
-        organizer: Organizer,
-        eventDate: Eventdate,
-        totalSeats: TotalSeats,
-        vipSeats: {
-          total: VIPSeats.Total,
-          sold: VIPSeats.Sold,
-          unsold: VIPSeats.Unsold,
-        },
-        standardSeats: {
-          total: StandardSeats.Total,
-          sold: StandardSeats.Sold,
-          unsold: StandardSeats.Unsold,
-        },
-      });
-  
-      await newBooking.save();
-  
-      res.status(201).json({ msg: `${Eventname} booking details added successfully.` });
-      console.log(newBooking);
-    } catch {
-      res.status(500).send("Internal Server Error");
+        const bookings = await ticket.find({}, { _id: 1, name: 1, eMail: 1, eventName: 1, seatingType: 1, No_OfTicket: 1, price: 1 });
+        res.json(bookings);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-});
-
-adminRoute.get('/viewBookDetails',authenticate,adminCheck,async(req,res)=>{
-    try{
-        const eventname = req.query.ename;
-        console.log(eventname);
-
-        const bookData = await booking.findOne({eventName:eventname});
-        if(bookData){
-            res.status(200).json({data:bookData});
-        }else{
-            res.status(404).json({msg:"No such event available"});
-        }
-    }
-    catch{
-        res.status(500).send("Internal Server Error");
-    }
-});
- 
-adminRoute.patch('/editBookedDetails',authenticate,adminCheck,async(req,res)=>{
-    try{
-        const {Eventname,Eventdate} = req.body;
-        const result = await booking.findOne({eventName: Eventname});
-            console.log(result)
-            if(result){
-                
-                result.eventName = Eventname,
-                result.eventDate = Eventdate
-
-                await result.save();
-                res.status(200).json({msg: `${Eventname} updated successfully`});
-                console.log(result)
-            }else{
-                res.status(404).json({msg :`${Eventname} doesnot exist`}); 
-            }  
-    }
-    catch{
-        res.status(500).send("Internal Server Error");
-    }
-});
-
-adminRoute.delete('/deleteBookedDetails',authenticate,adminCheck,async(req,res)=>{
-    try{
-        const {Eventname} = req.body;
-        console.log(Eventname);
-        const result = await booking.findOne({eventName:Eventname});
-        if(result){
-            await event.findOneAndDelete({eventName:Eventname});
-            res.status(200).json({msg:`${Eventname} has been deleted successfully `})
-        }else{
-            res.status(404).json({msg :`${Eventname} doesnot exist`});
-        }
-    }
-    catch{
-        res.status(500).send("Internal Sever Error");
-    }
-
 });
 
 export {adminRoute}

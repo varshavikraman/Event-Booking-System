@@ -11,7 +11,11 @@ import BookTicket from './pages/BookTicket';
 import Payment from './pages/Payment';
 import ConfirmTicket from './pages/ConfirmTicket';
 import BookedTickets from './pages/Ticket';
+import CancelTicket from './pages/CancelTicket'
+import Profile from './pages/Profile'
 import Signout from './components/Signout';
+import SearchResult from './components/SearchResult';
+import BookList from './pages/BookList';
 
 const App = () => {
   
@@ -29,7 +33,11 @@ const App = () => {
         <Route path="/payment" element={<Payment />} />
         <Route path="/confirm" element={<ConfirmTicket />} />
         <Route path="/booked-tickets" element={<BookedTickets />} />
+        <Route path="/cancel-ticket" element={<CancelTicket />} />
+        <Route path="/updateProfile" element={<Profile />} />
+        <Route path="/search" element={<SearchResult />} />
         <Route path="/signout" element={<Signout />} />
+        <Route path="/booked-details" element={<BookList />} />
 
         {/* 404 Page */}
         <Route path="*" element={<h1 className='text-[#981D26] text-center text-5xl mt-80'>404 - Page Not Found</h1>} />

@@ -35,8 +35,11 @@ const EventGrid = ({ isHome = true, showButton = true }) => {
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mx-5 my-10">
                     {eventList.map((event) => (
-                        <EventCard key={event.eventName} event={event} showButton={showButton} /> 
-                        // ✅ Now showButton is properly passed
+                        <EventCard 
+                            key={event._id || event.eventName} 
+                            event={event}
+                            showButton={showButton} 
+                        />
                     ))}
                 </div>
             )}
@@ -45,3 +48,4 @@ const EventGrid = ({ isHome = true, showButton = true }) => {
 };
 
 export default EventGrid;
+

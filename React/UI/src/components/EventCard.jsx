@@ -12,11 +12,15 @@ const EventCard = ({ event, showButton = true}) => {
     }
     return (
         <div className="bg-red-50 shadow-lg shadow-[#981D26] rounded-lg p-4">
-            <img 
-                src={event.image || 'https://via.placeholder.com/150'} 
-                alt={event.eventName || 'Event'} 
+            {event.eventName && (
+                <img 
+                src={`/api/getEventImage?eventName=${encodeURIComponent(event.eventName.trim())}`} 
+                alt={event.eventName} 
                 className="w-full h-48 object-cover rounded" 
-            />
+                onError={(e) => { e.target.src = "/fallback-image.jpg"; }} 
+                />
+            )}
+
             <h3 className="text-3xl font-semibold mt-4 text-[#981D26]">
                 {event.eventName || 'Unknown Event'} | {event.organizer || 'Unknown Organizer'}
             </h3>
@@ -58,7 +62,7 @@ const EventCard = ({ event, showButton = true}) => {
                 <img src={price} alt="Price" className="w-5 h-5"/>
                 <p>Rs.{event.price ?? 'N/A'}</p>
             </div>
-            {/* ✅ Conditionally Render "Book Now" Button */}
+            
             {showButton && (
                 <Link to={`/book/${event.eventName}`}>
                     <button className="bg-[#500E10] hover:bg-[#977073] text-[#F59B9E] hover:text-white font-bold py-2 px-4 mt-4 rounded">

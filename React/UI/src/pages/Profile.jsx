@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import Footer from '../components/Footer';
 import logo from '../assets/IMAGE/logo1.jpeg';
 
 const Profile = () => {
-    const navigate = useNavigate();
-    
-    // Single state object for profile
     const [profile, setProfile] = useState({ Name: "", Email: "", PhoneNo: "", UserRole: "" });
     const [updatedProfile, setUpdatedProfile] = useState({ Name: "", PhoneNo: "" });
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [isEditing, setIsEditing] = useState(false);
+    const [isUpdated, setIsUpdated] = useState(false); // ✅ Added missing state
 
     useEffect(() => {
         fetchProfile();
@@ -21,12 +18,17 @@ const Profile = () => {
 
     const fetchProfile = async () => {
         try {
-            const response = await fetch("/profile", { method: "GET", credentials: "include" });
+            const response = await fetch("/api/profile", { method: "GET", credentials: "include" });
+
             if (!response.ok) throw new Error("Failed to fetch profile.");
+    
             const data = await response.json();
+            console.log("Fetched Profile Data:", data); // Debugging output
             
-            setProfile(data); // Update profile
-            setUpdatedProfile({ Name: data.Name, PhoneNo: data.PhoneNo }); // Initialize editable fields
+            if (data) {
+                setProfile(data);
+                setUpdatedProfile({ Name: data.Name, PhoneNo: data.PhoneNo });
+            }
         } catch (err) {
             setError(err.message);
         } finally {
@@ -34,7 +36,10 @@ const Profile = () => {
         }
     };
 
-    const handleEdit = () => setIsEditing(true);
+    const handleEdit = () => {
+        setIsEditing(true);
+        setIsUpdated(false); // Reset update state when editing starts
+    };
 
     const handleChange = (e) => {
         setUpdatedProfile({ ...updatedProfile, [e.target.name]: e.target.value });
@@ -42,27 +47,40 @@ const Profile = () => {
 
     const handleSave = async () => {
         try {
-            const response = await fetch("/editProfile", {
+            const response = await fetch("/api/editProfile", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify(updatedProfile),
+                body: JSON.stringify({ 
+                    Name: updatedProfile.Name, 
+                    PhoneNo: updatedProfile.PhoneNo, 
+                    Email: profile.Email 
+                }),
             });
-
-            if (!response.ok) throw new Error("Failed to update profile.");
+    
             const result = await response.json();
-            setProfile(result.result); // Update profile with new values
+            console.log("🔍 API Response after update:", result); // 🐞 Debugging output
+    
+            if (!response.ok) {
+                throw new Error(result.msg || "Failed to update profile.");
+            }
+    
+            // ✅ Fetch updated profile from API after successful save
+            await fetchProfile(); 
+    
             setIsEditing(false);
+            setIsUpdated(true);
         } catch (err) {
+            console.error("❌ Error updating profile:", err);
             setError(err.message);
         }
     };
 
     return (
-        <div className="bg-[#F59B9E] min-h-screen">
+        <div className="flex flex-col bg-[#FFCCD5] min-h-screen">
             <NavBar />
-            <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-32">
-                <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg shadow-[#981D26] p-6">
+            <div className="flex-grow mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-32">
+                <div className=" max-w-md mx-auto bg-white rounded-2xl shadow-lg shadow-[#981D26] p-6">
                     <div className="text-center mb-4">
                         <img src={logo} alt="logo" className="w-16 h-16 mx-auto" />
                     </div>
@@ -83,17 +101,22 @@ const Profile = () => {
                                         name="Name"
                                         value={updatedProfile.Name}
                                         onChange={handleChange}
-                                        className="border rounded p-1"
+                                        className="border border-gray-300 rounded p-2 w-84"
                                     />
                                 ) : (
-                                    <p>{profile.Name || "N/A"}</p>
+                                    <p className="border border-gray-300 rounded p-2 w-84">{profile.Name || "N/A"}</p>
                                 )}
                             </div>
 
                             {/* Email (Non-editable) */}
                             <div className="flex justify-between">
                                 <label className="text-[#981D26] font-medium">Email:</label>
-                                <p className="font-semibold">{profile.Email || "N/A"}</p> 
+                                <input 
+                                    type="text"
+                                    value={profile.Email || "N/A"}
+                                    className="border border-gray-300 rounded p-2 w-84" 
+                                    readOnly
+                                />
                             </div>
 
                             {/* Phone Number */}
@@ -105,37 +128,46 @@ const Profile = () => {
                                         name="PhoneNo"
                                         value={updatedProfile.PhoneNo}
                                         onChange={handleChange}
-                                        className="border rounded p-1"
+                                        className="border border-gray-300 rounded p-2 w-84"
                                     />
                                 ) : (
-                                    <p>{profile.PhoneNo || "N/A"}</p>
+                                    <p className="border border-gray-300 rounded p-2 w-84">{profile.PhoneNo || "N/A"}</p>
                                 )}
                             </div>
 
                             {/* User Role (Non-editable) */}
                             <div className="flex justify-between">
-                                <label className="text-[#981D26] font-medium">User Role:</label>
-                                <p>{profile.UserRole || "N/A"}</p>
+                                <label className="text-[#981D26] font-medium">Role:</label>
+                                <input 
+                                    type="text"
+                                    value={profile.UserRole || "N/A"}
+                                    className="border border-gray-300 rounded p-2 w-84" 
+                                    readOnly
+                                />
                             </div>
                         </div>
                     )}
 
-                    {/* Buttons */}
+                    {/* Buttons (Hide after update) */}
                     <div className="text-center mt-6 flex justify-center space-x-4">
-                        {!isEditing ? (
-                            <button
-                                onClick={handleEdit}
-                                className="bg-[#500E10] text-[#F59B9E] font-medium py-2 px-6 rounded-lg hover:bg-[#977073] hover:text-white"
-                            >
-                                Edit
-                            </button>
-                        ) : (
-                            <button
-                                onClick={handleSave}
-                                className="bg-[#500E10] text-[#F59B9E] font-medium py-2 px-6 rounded-lg hover:bg-[#977073] hover:text-white"
-                            >
-                                Save
-                            </button>
+                        {!isUpdated && (
+                            <>
+                                {!isEditing ? (
+                                    <button
+                                        onClick={handleEdit}
+                                        className="bg-[#500E10] text-[#F59B9E] font-medium py-2 px-6 rounded-lg hover:bg-[#977073] hover:text-white"
+                                    >
+                                        Edit
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleSave}
+                                        className="bg-[#500E10] text-[#F59B9E] font-medium py-2 px-6 rounded-lg hover:bg-[#977073] hover:text-white"
+                                    >
+                                        Save
+                                    </button>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>

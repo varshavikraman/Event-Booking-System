@@ -9,21 +9,21 @@ const CancelTicket = () => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
 
-    const handleCancel = async () => {
+    const handleCancel = async (eventName) => { 
         setLoading(true);
         setMessage("");
-
+    
         try {
             const response = await fetch("/api/cancelTicket", {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ EventName: "Your Event Name" }) // Replace dynamically
+                body: JSON.stringify({ EventName: eventName }) 
             });
-
+    
             const data = await response.json();
-            
+    
             if (response.ok) {
                 setMessage("Your ticket booking has been successfully cancelled.");
             } else {
@@ -36,9 +36,10 @@ const CancelTicket = () => {
             setLoading(false);
         }
     };
+    
 
     return (
-        <div className="bg-[#F59B9E] min-h-screen">
+        <div className="bg-[#FFCCD5] min-h-screen">
             <NavBar />
             <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-32">
                 <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg shadow-[#981D26] p-6 text-center">

@@ -18,7 +18,6 @@ const BookTicket = () => {
     const [standardPrice, setStandardPrice] = useState(null);
     const [loadingPrice, setLoadingPrice] = useState(true);
 
-    // Fetch user details when component mounts
     useEffect(() => {
         const fetchUserDetails = async () => {
             try {
@@ -39,7 +38,6 @@ const BookTicket = () => {
         fetchUserDetails();
     }, []);
 
-    // Fetch event price from backend
     useEffect(() => {
         const fetchEventPrice = async () => {
             try {
@@ -47,8 +45,8 @@ const BookTicket = () => {
                 if (!res.ok) throw new Error("Failed to fetch event price");
     
                 const data = await res.json();
-                console.log("Event Price Data:", data); // Debugging line
-                setStandardPrice(data.standardPrice || 0); // Ensure fallback value
+                console.log("Event Price Data:", data);
+                setStandardPrice(data.standardPrice || 0);
                 setLoadingPrice(false);
             } catch (error) {
                 console.error("Error fetching event price:", error);
@@ -59,9 +57,8 @@ const BookTicket = () => {
         fetchEventPrice();
     }, [eventName]);
 
-    // Calculate price based on seating type
     const calculateTotalPrice = () => {
-        if (loadingPrice || standardPrice === null) return "N/A"; // Prevent incorrect display
+        if (loadingPrice || standardPrice === null) return "N/A";
         const pricePerSeat = seatingType === "VIP" ? standardPrice * 1.5 : standardPrice;
         return pricePerSeat * noOfTickets;
     };
@@ -79,13 +76,13 @@ const BookTicket = () => {
                     EventName: eventName,
                     SeatingType: seatingType,
                     NoOfTicket: noOfTickets,
-                    Price: calculateTotalPrice()  // 🔥 Add Price here
+                    Price: calculateTotalPrice()
                 }
             });
         };
     
     return (
-        <div className="bg-[#F59B9E]">
+        <div className="bg-[#FFCCD5]">
             <NavBar />
             <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-32">
                 <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-lg shadow-[#981D26] p-6">
@@ -168,7 +165,6 @@ const BookTicket = () => {
                             </div>  
                         </div>
 
-                        {/* Price Label Inside Input */}
                         <div className="mb-4">
                         <label className="text-[#981D26] block font-medium">Total Price:</label>
                         <input
