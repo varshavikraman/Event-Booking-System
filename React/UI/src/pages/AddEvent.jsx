@@ -45,7 +45,7 @@ const AddEvent = () => {
       const res = await fetch("/api/addEvent", {
         method: "POST",
         credentials: "include",
-        body: formData,  // No need for `Content-Type` header (browser sets it)
+        body: formData,  
       });
 
       if (!res.ok) {

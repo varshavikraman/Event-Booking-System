@@ -8,7 +8,6 @@ const Payment = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Extract payment details from state
     const { 
         Name, 
         Email, 
@@ -50,11 +49,11 @@ const Payment = () => {
 
                 if (!res.ok) throw new Error("Payment failed");
 
-                const bookingData = await res.json(); // Get response data
+                const bookingData = await res.json(); 
                 
                 setMessage("Payment successful!");
                 
-                navigate('/confirm', { state: bookingData }); // Pass booking details
+                navigate('/confirm', { state: bookingData }); 
 
             } catch (error) {
                 console.error("the error is",error)
@@ -65,7 +64,7 @@ const Payment = () => {
         }, 2000);
     };
 
-    // Handle payment cancellation
+
     const handleCancel = () => {
         setLoading(true);
         setMessage("Cancelling booking...");
@@ -83,17 +82,17 @@ const Payment = () => {
             <div className="flex-grow flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
                 <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg shadow-[#981D26] p-6 text-center">
                     
-                    {/* Logo */}
+                    
                     <div className="mb-4">
                         <img src={logo} alt="logo" className="w-16 h-16 mx-auto" />
                     </div>
 
-                    {/* Title */}
+                    
                     <h2 className="text-[#981D26] text-2xl sm:text-3xl font-medium mb-4">
                         Booking Payment
                     </h2>
 
-                    {/* Booking Summary */}
+                    
                     <div className="bg-gray-100 p-4 rounded-lg shadow-md text-left mb-4">
                         <h3 className="text-[#981D26] text-xl font-semibold mb-2">Booking Details</h3>
                         <p><strong>Name:</strong> {Name}</p>
@@ -107,12 +106,12 @@ const Payment = () => {
                         </p>
                     </div>
 
-                    {/* Dynamic Message */}
+                   
                     {message && (
                         <p className="text-[#500E10] font-semibold mb-4">{message}</p>
                     )}
 
-                    {/* Buttons */}
+                    
                     <div className="flex justify-center space-x-4">
                         <button 
                             onClick={handlePayment} 

@@ -10,7 +10,7 @@ const Profile = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [isEditing, setIsEditing] = useState(false);
-    const [isUpdated, setIsUpdated] = useState(false); // ✅ Added missing state
+    const [isUpdated, setIsUpdated] = useState(false); 
 
     useEffect(() => {
         fetchProfile();
@@ -23,7 +23,7 @@ const Profile = () => {
             if (!response.ok) throw new Error("Failed to fetch profile.");
     
             const data = await response.json();
-            console.log("Fetched Profile Data:", data); // Debugging output
+            console.log("Fetched Profile Data:", data); 
             
             if (data) {
                 setProfile(data);
@@ -38,7 +38,7 @@ const Profile = () => {
 
     const handleEdit = () => {
         setIsEditing(true);
-        setIsUpdated(false); // Reset update state when editing starts
+        setIsUpdated(false); 
     };
 
     const handleChange = (e) => {
@@ -59,19 +59,18 @@ const Profile = () => {
             });
     
             const result = await response.json();
-            console.log("🔍 API Response after update:", result); // 🐞 Debugging output
+            console.log("API Response after update:", result); 
     
             if (!response.ok) {
                 throw new Error(result.msg || "Failed to update profile.");
             }
-    
-            // ✅ Fetch updated profile from API after successful save
+
             await fetchProfile(); 
     
             setIsEditing(false);
             setIsUpdated(true);
         } catch (err) {
-            console.error("❌ Error updating profile:", err);
+            console.error("Error updating profile:", err);
             setError(err.message);
         }
     };
@@ -92,7 +91,7 @@ const Profile = () => {
                         <p className="text-center text-red-600">{error}</p>
                     ) : (
                         <div className="space-y-4">
-                            {/* Name */}
+
                             <div className="flex justify-between">
                                 <label className="text-[#981D26] font-medium">Name:</label>
                                 {isEditing ? (
@@ -108,7 +107,7 @@ const Profile = () => {
                                 )}
                             </div>
 
-                            {/* Email (Non-editable) */}
+
                             <div className="flex justify-between">
                                 <label className="text-[#981D26] font-medium">Email:</label>
                                 <input 
@@ -119,7 +118,7 @@ const Profile = () => {
                                 />
                             </div>
 
-                            {/* Phone Number */}
+
                             <div className="flex justify-between">
                                 <label className="text-[#981D26] font-medium">Phone No:</label>
                                 {isEditing ? (
@@ -135,7 +134,7 @@ const Profile = () => {
                                 )}
                             </div>
 
-                            {/* User Role (Non-editable) */}
+
                             <div className="flex justify-between">
                                 <label className="text-[#981D26] font-medium">Role:</label>
                                 <input 
@@ -148,7 +147,7 @@ const Profile = () => {
                         </div>
                     )}
 
-                    {/* Buttons (Hide after update) */}
+                   
                     <div className="text-center mt-6 flex justify-center space-x-4">
                         {!isUpdated && (
                             <>

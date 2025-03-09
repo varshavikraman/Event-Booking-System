@@ -15,13 +15,13 @@ const adminRoute = Router();
 adminRoute.post('/addEvent', authenticate, adminCheck, upload.single("EventImage"), async (req, res) => {
     try {
         console.log("Request Body:", req.body);
-        console.log("Uploaded File:", req.file); // Debugging
+        console.log("Uploaded File:", req.file);
 
         const { Eventname, Organizer, Description, Venue, Location, NoOfTickets, VIPSeats, StandardSeats, Date, Time, Price } = req.body;
         
         let ImageFile = "";
         if (req.file) {
-            ImageFile = convertToBase64(req.file.buffer);  // Convert image to base64
+            ImageFile = convertToBase64(req.file.buffer);
         }
 
         const newEvent = new event({
@@ -125,68 +125,6 @@ adminRoute.get('/getEventImage', async (req, res) => {
         res.status(500).json({ msg: "Internal Server Error", error: error.message });
     }
 });
-
-adminRoute.patch('/editEvent',authenticate,adminCheck,async(req,res)=>{
-    try{
-        const {Eventname,Venue,Price} = req.body;
-        const result = await event.findOne({eventName:Eventname,});
-            if(result){
-                result.eventName = Eventname,
-                result.venue = Venue,
-                result.price = Price
-
-                await result.save();
-                
-                res.status(200).json({msg: `${Eventname} updated successfully`})
-                console.log(Eventname)
-            }else{
-                res.status(400).json({msg :`${Eventname} doesn't exist`}); 
-            }
-    }
-    catch{
-        res.status(500).send("Internal Sever Error");
-    }
-});
-
-adminRoute.patch('/editEvent',authenticate,adminCheck,async(req,res)=>{
-    try{
-        const {Eventname,Venue,Price} = req.body;
-        const result = await event.findOne({eventName:Eventname,});
-            if(result){
-                result.eventName = Eventname,
-                result.venue = Venue,
-                result.price = Price
-
-                await result.save();
-                
-                res.status(200).json({msg: `${Eventname} updated successfully`})
-                console.log(Eventname)
-            }else{
-                res.status(400).json({msg :`${Eventname} doesn't exist`}); 
-            }
-    }
-    catch{
-        res.status(500).send("Internal Sever Error");
-    }
-});
-
-adminRoute.delete('/deleteEvent',authenticate,adminCheck,async(req,res)=>{
-    try{
-        const {EventName} = req.body;
-        console.log(EventName);
-        const result = await event.findOne({eventName:EventName});
-        if(result){
-            await event.findOneAndDelete({eventName:EventName});
-            res.status(200).json({msg:`${EventName} has been deleted successfully `})
-        }else{
-            res.status(404).json({msg :`${EventName} doesnot exist`});
-        }
-    }
-    catch{
-        res.status(500).send("Internal Sever Error");
-    }
-
-})
     
 adminRoute.get('/bookings', authenticate, adminCheck, async (req, res) => {
     try {

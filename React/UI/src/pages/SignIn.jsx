@@ -29,13 +29,8 @@ const SignIn = () => {
 
       const data = await response.json();
       console.log("Sign-in successful:", data);
-      if (data.userRole === 'Admin') {
-        navigate('/dashboard'); // Then navigate to dashboard
-        navigate('/home'); // Navigate to home first
-        
-      } else {
-        navigate('/home'); // If user, just navigate to home
-      }
+      navigate('/dashboard')
+      
     } catch (err) {
       setError(err.message || 'Sign in failed: Please try again!');
     }

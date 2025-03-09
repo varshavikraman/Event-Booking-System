@@ -20,12 +20,12 @@ const Landing = () => {
         <header className="fixed top-0 left-0 w-full bg-[#C9184A] bg-opacity-90 flex justify-between items-center px-6 sm:px-10 py-4 z-50">
             <img src={logo} alt="logo" className="w-12 h-12 sm:w-16 sm:h-16" />
             <nav className="flex flex-wrap items-center space-x-4 sm:space-x-10 text-sm sm:text-lg">
-              <ScrollLink to="home" smooth={true} duration={500} className="text-[#FF758F] font-bold hover:underline">Home</ScrollLink>
-              <ScrollLink to="about" smooth={true} duration={500} className="text-[#FF758F] font-bold hover:underline">About</ScrollLink>
-              <ScrollLink to="events" smooth={true} duration={500} className="text-[#FF758F] font-bold hover:underline">Events</ScrollLink>
-              <ScrollLink to="contact" smooth={true} duration={500} className="text-[#FF758F] font-bold hover:underline">Contact</ScrollLink>
+              <Link to="/home" className="text-[#FFF0F3] font-bold hover:underline">Home</Link>
+              <ScrollLink to="about" smooth={true} duration={500} className="text-[#FFF0F3] font-bold hover:underline">About</ScrollLink>
+              <ScrollLink to="events" smooth={true} duration={500} className="text-[#FFF0F3] font-bold hover:underline">Events</ScrollLink>
+              <ScrollLink to="contact" smooth={true} duration={500} className="text-[#FFF0F3] font-bold hover:underline">Contact</ScrollLink>
               <Link to="/signin">
-                <button className="mt-3 sm:mt-0 w-28 h-10 sm:w-32 sm:h-12 text-[#FF758F] bg-[#500E10] font-medium rounded-2xl hover:bg-[#977073] hover:text-white">
+                <button className="mt-3 sm:mt-0 w-28 h-10 sm:w-32 sm:h-12 text-[#FFF0F3] bg-[#500E10] font-medium rounded-2xl hover:bg-[#977073] hover:text-white">
                   Sign In
                 </button>
               </Link>
@@ -38,7 +38,7 @@ const Landing = () => {
             style={{ backgroundImage: `url(${bgImage})` }}
           >
             <div className="text-center mt-20 sm:mt-32 px-4">
-              <h1 className="font-serif text-4xl sm:text-5xl font-medium text-[#F59B9E]">Dancing Leaf</h1>
+              <h1 className="font-serif text-4xl sm:text-5xl font-medium text-[#FFF0F3]">Dancing Leaf</h1>
               <h2 className="font-sans text-xl sm:text-2xl font-medium pt-4 text-[#FF4D6D] italic">
                 Find and Book Events Easily
               </h2>
@@ -55,7 +55,7 @@ const Landing = () => {
 
           <section className="py-10 bg-[#981D26]" id="about">
             <div className="max-w-5xl mx-auto text-center px-6">
-              <h2 className="font-serif text-4xl sm:text-5xl font-medium text-[#D76067]">Dancing Leaf</h2>
+              <h2 className="font-serif text-4xl sm:text-5xl font-medium text-[#590d22]">Dancing Leaf</h2>
               <p className="text-base sm:text-xl italic pt-4 text-white">
                 “Unleash Unforgettable Adventure. Reserve Your Spot and Dive into the Excitement!”
               </p>

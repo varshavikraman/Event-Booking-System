@@ -85,6 +85,34 @@ accountRoute.delete('/cancelTicket',authenticate,async(req,res)=>{
     }
 
 })
+accountRoute.get("/filterEvents", async (req, res) => {
+
+  const { date, price, location } = req.query;
+  let filter = {};
+
+  if (date) {
+      const parsedDate = new Date(date);
+      if (!isNaN(parsedDate)) {
+          filter.date = parsedDate;
+      }
+  }
+  
+  if (price) {
+      filter.price = Number(price); // Ensure it's a number
+  }
+  
+  if (location) {
+      filter.location = new RegExp(location, "i"); // Case-insensitive search
+  }
+
+  try {
+    const events = await event.find(filter); 
+    res.json(events);
+  } catch (error) {
+      console.error("Error fetching events:", error);
+      res.status(500).json({ error: "Server Error" });
+  }
+});
 
 export {accountRoute}
 

@@ -16,7 +16,7 @@ accountRoute.get("/profile", authenticate, async (req, res) => {
       }
 
       res.status(200).json({
-        Name: userProfile.name,  // Ensure the correct field names
+        Name: userProfile.name,  
         Email: userProfile.eMail, 
         PhoneNo: userProfile.phoneNo || "",
         UserRole: userProfile.userRole
@@ -32,7 +32,7 @@ accountRoute.patch('/editProfile', authenticate, async (req, res) => {
         const { Name, PhoneNo, Email } = req.body;
 
         const updatedProfile = await user.findOneAndUpdate(
-            { eMail: Email }, // Ensure field name matches MongoDB
+            { eMail: Email }, 
             { $set: { name: Name, phoneNo: PhoneNo } },
             { new: true }
         );
@@ -44,7 +44,7 @@ accountRoute.patch('/editProfile', authenticate, async (req, res) => {
         res.status(200).json({ 
             msg: 'Profile updated successfully', 
             result: {
-                Name: updatedProfile.name,  // Match frontend expectations
+                Name: updatedProfile.name,  
                 Email: updatedProfile.eMail, 
                 PhoneNo: updatedProfile.phoneNo, 
                 UserRole: updatedProfile.userRole
@@ -57,22 +57,18 @@ accountRoute.patch('/editProfile', authenticate, async (req, res) => {
 });
 
 
-// Route to retrieve user details
 accountRoute.get('/getUser', authenticate, async (req, res) => {
     try {
         console.log("Decoded User ID:", req.user_id);
-        // Get user ID from the authentication middleware
+
         const userId = req.user_id;
 
-        // Find the user in the database without returning the password
         const userData = await user.findById(userId).select("-password");
 
-        // If no user found, return error
         if (!userData) {
             return res.status(404).json({ msg: "User not found" });
         }
 
-        // Send user data
         res.status(200).json(userData);
     } catch (error) {
         console.error("Error fetching user details:", error);
@@ -84,21 +80,17 @@ accountRoute.post('/bookTicket', authenticate, async (req, res) => {
     try {
         const { Name, Email, PhoneNo, EventName, SeatingType, NoOfTicket, Price } = req.body;
 
-        // Find the event
         const eventData = await event.findOne({ eventName: EventName });
         if (!eventData) {
             return res.status(404).json({ msg: "Event not found" });
         }
 
-        // Determine which seat type to update
         let seatField = SeatingType === "VIP" ? "vipSeats" : "standardSeats";
 
-        // Check ticket availability
         if (eventData.No_of_Tickets < NoOfTicket || eventData[seatField] < NoOfTicket) {
             return res.status(400).json({ msg: "Not enough tickets available" });
         }
 
-        // Create a new ticket booking
         const newTicket = new ticket({
             name: Name,
             eMail: Email,
@@ -111,7 +103,6 @@ accountRoute.post('/bookTicket', authenticate, async (req, res) => {
 
         await newTicket.save();
 
-        // Update event ticket counts (total and seat type)
         const updatedEvent = await event.findOneAndUpdate(
             { 
                 eventName: EventName, 
@@ -131,7 +122,6 @@ accountRoute.post('/bookTicket', authenticate, async (req, res) => {
             return res.status(400).json({ msg: "Not enough tickets available" });
         }
 
-        // Send structured response
         res.status(200).json({ 
             message: "Your ticket is booked successfully!", 
             booking: {
@@ -174,17 +164,17 @@ accountRoute.get('/getEventPrice/:eventName', authenticate, async (req, res) => 
 accountRoute.get('/getBooking', authenticate, async (req, res) => {
   try {
     console.log("hi")
-      const userEmail = req.Email; // Extracting email from authenticated user
+      const userEmail = req.Email;
         
       console.log("useremail:",userEmail);
       
-      const bookings = await ticket.find({ eMail: userEmail }); // Fetch bookings
+      const bookings = await ticket.find({ eMail: userEmail });
       console.log("Fetched Bookings:", bookings);    
       if (!bookings.length) {
           return res.status(404).json({ msg: "No bookings found" });
       }
 
-      res.status(200).json(bookings[0]); // ✅ Send only the latest booking
+      res.status(200).json(bookings[0]);
   } catch (error) {
       console.error(error);
       res.status(500).json({ msg: "Internal Server Error" });
@@ -193,16 +183,16 @@ accountRoute.get('/getBooking', authenticate, async (req, res) => {
 
 accountRoute.get("/getUserTickets", authenticate, async (req, res) => {
     try {
-        const userEmail = req.Email; // Get user email from the authentication token
-        console.log("User Email:", userEmail); // Debugging
+        const userEmail = req.Email;
+        console.log("User Email:", userEmail);
 
         const tickets = await ticket.aggregate([
             {
-                $match: { eMail: userEmail } // Find user's tickets
+                $match: { eMail: userEmail } 
             },
             {
                 $lookup: {
-                    from: "eventdetails", // MongoDB collection name (ensure lowercase & pluralized correctly)
+                    from: "eventdetails",
                     localField: "eventName",
                     foreignField: "eventName",
                     as: "eventDetails"
@@ -211,12 +201,12 @@ accountRoute.get("/getUserTickets", authenticate, async (req, res) => {
             {
                 $unwind: {
                     path: "$eventDetails",
-                    preserveNullAndEmptyArrays: true // Ensure tickets without matching events don't break the response
+                    preserveNullAndEmptyArrays: true 
                 }
             }
         ]);
 
-        console.log("Tickets Found:", tickets); // Debugging
+        console.log("Tickets Found:", tickets); 
 
         res.status(200).json(tickets);
     } catch (error) {
@@ -233,19 +223,19 @@ accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
         const userEmail = req.Email;
         console.log("Cancel Request:",{EventName,userEmail});
 
-      // Find the ticket
+      
         const ticketData = await ticket.findOne({ eventName: EventName, eMail: userEmail });
 
         if (!ticketData) {
           return res.status(404).json({ msg: "Ticket doesn't exist" });
         }
 
-        const noOfCanceledTickets = ticketData.No_OfTicket; // Get the number of tickets booked
+        const noOfCanceledTickets = ticketData.No_OfTicket;
 
-      // Delete the ticket
+    
         await ticket.findOneAndDelete({ eventName: EventName, eMail: userEmail });
 
-      // Increase the available tickets in event details
+    
         await event.updateOne({ eventName: EventName }, { $inc: { No_of_Tickets: noOfCanceledTickets } });
 
         res.status(200).json({ msg: "Ticket canceled successfully" });
@@ -264,7 +254,7 @@ accountRoute.get('/searchEvent', async (req, res) => {
 
         const searchResults = await event.find({
             $or: [
-                { eventName: { $regex: searchValue, $options: "i" } }, // Case-insensitive search
+                { eventName: { $regex: searchValue, $options: "i" } },
                 { location: { $regex: searchValue, $options: "i" } },
                 { organizer: { $regex: searchValue, $options: "i" } }
             ]
@@ -281,34 +271,7 @@ accountRoute.get('/searchEvent', async (req, res) => {
     }
 });
 
-accountRoute.get("/filterEvents", async (req, res) => {
 
-    const { date, price, location } = req.query;
-    let filter = {};
-
-    if (date) {
-        const parsedDate = new Date(date);
-        if (!isNaN(parsedDate)) {
-            filter.date = parsedDate;
-        }
-    }
-    
-    if (price) {
-        filter.price = Number(price); // Ensure it's a number
-    }
-    
-    if (location) {
-        filter.location = new RegExp(location, "i"); // Case-insensitive search
-    }
-  
-    try {
-      const events = await event.find(filter); 
-      res.json(events);
-    } catch (error) {
-        console.error("Error fetching events:", error);
-        res.status(500).json({ error: "Server Error" });
-    }
-});
 
 export {accountRoute}
 

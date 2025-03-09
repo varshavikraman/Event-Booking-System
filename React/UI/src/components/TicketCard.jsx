@@ -48,7 +48,7 @@ const TicketCard = ({ ticket, handleCancel  }) => {
             <div className="flex justify-end">
             <button 
                     className="bg-[#500E10] hover:bg-[#977073] text-[#F59B9E] hover:text-white font-bold py-2 px-4 mt-4 rounded"
-                    onClick={() => handleCancel(ticket.eventName)} // Call cancel function
+                    onClick={() => handleCancel(ticket.eventName)}
                 >
                     Cancel
                 </button>
