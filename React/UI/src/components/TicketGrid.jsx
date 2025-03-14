@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom"; // Import navigate
 import TicketCard from './TicketCard';
 
 const TicketGrid = ({ isHome = true }) => {
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchUserTickets = async () => {
@@ -14,12 +16,22 @@ const TicketGrid = ({ isHome = true }) => {
                     headers: { "Content-Type": "application/json" },
                 });
 
-                if (!response.ok) throw new Error("Failed to fetch tickets");
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.msg || "Failed to fetch tickets");
+                }
 
                 const data = await response.json();
-                setTickets(data);
+                console.log("Fetched Data:", data);
+
+                if (data && Array.isArray(data.bookings)) {
+                    setTickets(data.bookings);
+                } else {
+                    setTickets([]);
+                }
             } catch (error) {
                 console.error("Error fetching user tickets:", error);
+                setTickets([]);
             } finally {
                 setLoading(false);
             }
@@ -28,27 +40,14 @@ const TicketGrid = ({ isHome = true }) => {
         fetchUserTickets();
     }, []);
 
-    const handleCancel = async (eventName) => {
-        try {
-            const response = await fetch("/api/cancelTicket", {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ EventName: eventName }),
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                alert("Ticket cancelled successfully!");
-                setTickets(tickets.filter(ticket => ticket.eventName !== eventName));
-                navigate("/cancel-ticket");
-            } else {
-                alert(data.msg || "Failed to cancel ticket.");
-            }
-        } catch (error) {
-            console.error("Error:", error);
-            alert("Something went wrong. Please try again.");
-        }
+    const handleCancel = (eventName) => {
+        console.log("Redirecting to cancel page for:", eventName);
+        
+        navigate("/cancel-ticket", {
+            state: { eventName }  // Pass ticket details to CancelTicket page
+        });
     };
+    
 
     return (
         <div>

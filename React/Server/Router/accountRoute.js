@@ -3,6 +3,7 @@ import authenticate from "../Middleware/auth.js";
 import { user } from "../Model/sample.js";
 import {ticket} from "../Model/sample.js";
 import { event } from "../Model/sample.js";
+import { booking } from "../Model/sample.js";
 
 const accountRoute = Router();
 
@@ -78,19 +79,38 @@ accountRoute.get('/getUser', authenticate, async (req, res) => {
 
 accountRoute.post('/bookTicket', authenticate, async (req, res) => {
     try {
-        const { Name, Email, PhoneNo, EventName, SeatingType, NoOfTicket, Price } = req.body;
+        console.log("Received Request Body:", req.body);
 
+        const { Name, Email, PhoneNo, EventName, SeatingType, NoOfTicket, Price } = req.body;
+        const userId = req.user_id; 
+
+        // Find the event details
         const eventData = await event.findOne({ eventName: EventName });
         if (!eventData) {
             return res.status(404).json({ msg: "Event not found" });
         }
 
+        // Determine the correct seat type field in the event schema
         let seatField = SeatingType === "VIP" ? "vipSeats" : "standardSeats";
 
+        // Check if enough tickets are available
         if (eventData.No_of_Tickets < NoOfTicket || eventData[seatField] < NoOfTicket) {
             return res.status(400).json({ msg: "Not enough tickets available" });
         }
 
+        // Find total tickets booked by the user for this specific event
+        const eventBookings = await ticket.find({ eMail: Email, eventName: EventName });
+
+        // Calculate total tickets the user has booked for this event
+        const totalTicketsForEvent = eventBookings.reduce((sum, ticket) => sum + ticket.No_OfTicket, 0);
+        const remainingTicketsForEvent = 6 - totalTicketsForEvent;
+
+        // Restrict booking if it exceeds 6 tickets for this event
+        if (NoOfTicket > remainingTicketsForEvent) {
+            return res.status(400).json({ msg: `You can only book ${remainingTicketsForEvent} more ticket(s) for this event.` });
+        }
+
+        // Save the new ticket
         const newTicket = new ticket({
             name: Name,
             eMail: Email,
@@ -103,12 +123,28 @@ accountRoute.post('/bookTicket', authenticate, async (req, res) => {
 
         await newTicket.save();
 
-        const updatedEvent = await event.findOneAndUpdate(
-            { 
-                eventName: EventName, 
-                No_of_Tickets: { $gte: NoOfTicket }, 
-                [seatField]: { $gte: NoOfTicket } 
-            },
+        // Check if a booking already exists for this user and event
+        let userBooking = await booking.findOne({ userId, eventId: eventData._id });
+
+        if (userBooking) {
+            // If booking exists, add ticket reference to it
+            userBooking.tickets.push(newTicket._id);
+            await userBooking.save();
+        } else {
+            // If no booking exists, create a new booking entry
+            const newBooking = new booking({
+                userId: userId, 
+                eventId: eventData._id,
+                tickets: [newTicket._id],
+                status: "Confirm",
+            });
+
+            await newBooking.save();
+        }
+
+        // Update event ticket count
+        await event.findOneAndUpdate(
+            { eventName: EventName },
             { 
                 $inc: { 
                     No_of_Tickets: -NoOfTicket,  
@@ -118,21 +154,9 @@ accountRoute.post('/bookTicket', authenticate, async (req, res) => {
             { new: true }
         );
 
-        if (!updatedEvent) {
-            return res.status(400).json({ msg: "Not enough tickets available" });
-        }
-
         res.status(200).json({ 
             message: "Your ticket is booked successfully!", 
-            booking: {
-                Name: newTicket.name,
-                Email: newTicket.eMail,
-                PhoneNo: newTicket.phoneNo,
-                EventName: newTicket.eventName,
-                SeatingType: newTicket.seatingType,
-                NoOfTicket: newTicket.No_OfTicket,
-                Price: newTicket.price
-            }
+            booking: newTicket
         });
 
         console.log("Booking Confirmed:", newTicket);
@@ -142,6 +166,8 @@ accountRoute.post('/bookTicket', authenticate, async (req, res) => {
         res.status(500).json({ msg: "Internal Server Error", error: error.message });
     }
 });
+
+
 
 accountRoute.get('/getEventPrice/:eventName', authenticate, async (req, res) => {
     try {
@@ -181,69 +207,129 @@ accountRoute.get('/getBooking', authenticate, async (req, res) => {
   }
 });
 
-accountRoute.get("/getUserTickets", authenticate, async (req, res) => {
+const UserBookings = async (req, res) => {
     try {
-        const userEmail = req.Email;
-        console.log("User Email:", userEmail);
+        const userId = req.user_id; // Assuming user is authenticated
 
-        const tickets = await ticket.aggregate([
-            {
-                $match: { eMail: userEmail } 
+        const bookings = await booking.find({ userId })
+            .populate("eventId", "eventName image venue location date time") // Get event details
+            .populate("tickets", "seatingType No_OfTicket") // Get seat details
+            .lean();
+
+        // Format response
+        const formattedBookings = bookings.map(booking => ({
+            eventName: booking.eventId.eventName,
+            eventInfo: {
+                image: booking.eventId.image,
+                venue: booking.eventId.venue,
+                location: booking.eventId.location,
+                date: booking.eventId.date,
+                time: booking.eventId.time
             },
-            {
-                $lookup: {
-                    from: "eventdetails",
-                    localField: "eventName",
-                    foreignField: "eventName",
-                    as: "eventDetails"
-                }
-            },
-            {
-                $unwind: {
-                    path: "$eventDetails",
-                    preserveNullAndEmptyArrays: true 
-                }
-            }
-        ]);
+            seatDetails: booking.tickets.map(ticket => ({
+                seatType: ticket.seatingType,
+                count: ticket.No_OfTicket
+            })),
+            status: booking.status 
+        }));
 
-        console.log("Tickets Found:", tickets); 
-
-        res.status(200).json(tickets);
+        res.status(200).json({ bookings: formattedBookings });
     } catch (error) {
-        console.error("Error retrieving tickets:", error);
-        res.status(500).json({ message: "Error retrieving tickets" });
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
     }
-});
+};
 
+accountRoute.get("/getUserTickets", authenticate, UserBookings);
 
 accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
-
     try {
-        const { EventName } = req.body;
+        const { EventName, cancelSeats } = req.body;  // cancelSeats = [{ SeatType: "vip", cancelCount: 2 }, { SeatType: "standard", cancelCount: 3 }]
+        console.log("Cancel request received:", req.body);
         const userEmail = req.Email;
-        console.log("Cancel Request:",{EventName,userEmail});
 
-      
-        const ticketData = await ticket.findOne({ eventName: EventName, eMail: userEmail });
-
-        if (!ticketData) {
-          return res.status(404).json({ msg: "Ticket doesn't exist" });
+        if (!EventName || !Array.isArray(cancelSeats) || cancelSeats.length === 0) {
+            return res.status(400).json({ msg: "Invalid cancellation request." });
         }
 
-        const noOfCanceledTickets = ticketData.No_OfTicket;
+        // Step 1: Fetch user ID
+        const userData = await user.findOne({ eMail: userEmail });
+        if (!userData) {
+            return res.status(404).json({ msg: "User not found." });
+        }
+        const userId = userData._id;
 
-    
-        await ticket.findOneAndDelete({ eventName: EventName, eMail: userEmail });
+        // Step 2: Find the user's booking
+        const userBooking = await booking.findOne({ userId }).populate("tickets");
 
-    
-        await event.updateOne({ eventName: EventName }, { $inc: { No_of_Tickets: noOfCanceledTickets } });
+        if (!userBooking || userBooking.tickets.length === 0) {
+            return res.status(404).json({ msg: "No matching booking found." });
+        }
 
-        res.status(200).json({ msg: "Ticket canceled successfully" });
+        let totalCanceledTickets = 0; // Track total canceled tickets for updating event
+
+        // Step 3: Process each seat type cancellation
+        for (const { SeatType, cancelCount } of cancelSeats) {
+            if (!SeatType || cancelCount <= 0) continue;
+
+            // Find the ticket for the specific seat type
+            const userTicket = userBooking.tickets.find(ticket =>
+                ticket.eventName === EventName && ticket.seatingType === SeatType
+            );
+
+            if (!userTicket) {
+                console.warn(`No ticket found for ${SeatType}, skipping.`);
+                continue;
+            }
+
+            if (cancelCount > userTicket.No_OfTicket) {
+                return res.status(400).json({ msg: `Cannot cancel more tickets than booked for ${SeatType}.` });
+            }
+
+            totalCanceledTickets += cancelCount; // Track for event update
+
+            if (cancelCount === userTicket.No_OfTicket) {
+                // Remove the ticket from booking
+                await ticket.deleteOne({ _id: userTicket._id });
+                userBooking.tickets = userBooking.tickets.filter(t => t._id.toString() !== userTicket._id.toString());
+            } else {
+                // Reduce ticket count
+                userTicket.No_OfTicket -= cancelCount;
+                await userTicket.save();
+            }
+        }
+
+        // Step 4: Remove booking if no tickets remain
+        if (userBooking.tickets.length === 0) {
+            userBooking.status = "Cancelled"; // Mark as cancelled
+            await userBooking.save();
+        }
+
+        // Step 5: Update event details (seat counts & total tickets)
+        const eventData = await event.findOne({ eventName: EventName });
+        if (!eventData) {
+            return res.status(404).json({ msg: "Event not found." });
+        }
+
+        cancelSeats.forEach(({ SeatType, cancelCount }) => {
+            if (SeatType.toLowerCase() === "vip") {
+                eventData.vipSeats += cancelCount;
+            } else {
+                eventData.standardSeats += cancelCount;
+            }
+        });
+
+        eventData.No_of_Tickets += totalCanceledTickets; // Restore total available tickets
+        await eventData.save();
+
+        res.status(200).json({ msg: `Successfully canceled tickets. Event seat count updated.` });
+
     } catch (error) {
-      console.error(error);
-      res.status(500).send("Internal Server Error");
+        console.error("Error canceling ticket:", error);
+        res.status(500).json({ msg: "Internal Server Error" });
     }
 });
+
 
 accountRoute.get('/searchEvent', async (req, res) => {
     try {

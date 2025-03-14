@@ -11,15 +11,15 @@ dotenv.config();
 
 const app=express();
 
-app.use(express.json({ limit: "10mb" })); // Increase JSON body size
-app.use(express.urlencoded({ extended: true, limit: "10mb" })); // Increase form data limit
+app.use(express.json({ limit: "10mb" })); 
+app.use(express.urlencoded({ extended: true, limit: "10mb" })); 
 
-app.use(cookieParser()); // Enables reading cookies
+app.use(cookieParser()); 
 
 app.use(
     cors({
-        origin: "http://localhost:3030", // Allow frontend requests
-        credentials: true, // Allow cookies and authentication headers
+        origin: "http://localhost:3030", 
+        credentials: true, 
     })
 );
 

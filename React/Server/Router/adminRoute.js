@@ -131,7 +131,8 @@ adminRoute.get('/bookings', authenticate, adminCheck, async (req, res) => {
         const bookings = await ticket.find({}, { _id: 1, name: 1, eMail: 1, eventName: 1, seatingType: 1, No_OfTicket: 1, price: 1 });
         res.json(bookings);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error("Error fetching booking Details:", error.message);
+        res.status(500).json({ message:"Internal Server Error", error: error.message });
     }
 });
 

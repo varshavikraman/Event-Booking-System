@@ -58,13 +58,13 @@ const ConfirmTicket = () => {
                         <p className="text-center text-red-600">{error}</p>
                     ) : (
                         <div className="space-y-4">
-                            <p><strong>Name:</strong> {bookingData.Name || "N/A"}</p>
-                            <p><strong>Email:</strong> {bookingData.Email || "N/A"}</p>
-                            <p><strong>Phone No:</strong> {bookingData.PhoneNo || "N/A"}</p>
-                            <p><strong>Event Name:</strong> {bookingData.EventName || "N/A"}</p>
-                            <p><strong>Seating Type:</strong> {bookingData.SeatingType || "N/A"}</p>
-                            <p><strong>No. of Tickets:</strong> {bookingData.NoOfTicket || "N/A"}</p>
-                            <p className="text-lg font-bold"><strong>Total Price:</strong> ₹{bookingData.Price || "N/A"}</p>
+                            <p><strong>Name:</strong> {bookingData.name || "N/A"}</p>
+                            <p><strong>Email:</strong> {bookingData.eMail || "N/A"}</p>
+                            <p><strong>Phone No:</strong> {bookingData.phoneNo || "N/A"}</p>
+                            <p><strong>Event Name:</strong> {bookingData.eventName || "N/A"}</p>
+                            <p><strong>Seating Type:</strong> {bookingData.seatingType || "N/A"}</p>
+                            <p><strong>No. of Tickets:</strong> {bookingData.No_OfTicket || "N/A"}</p>
+                            <p className="text-lg font-bold"><strong>Total Price:</strong> ₹{bookingData.price || "N/A"}</p>
                         </div>
                     )}
 
