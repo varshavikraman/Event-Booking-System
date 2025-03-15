@@ -31,7 +31,7 @@ const SignUp = () => {
 
       if (!response.ok) {
         const errData = await response.json();
-        throw new Error(errData.msg || 'Signup failed');
+        throw new Error(errData.message || 'Signup failed');
       }
 
       const data = await response.json();

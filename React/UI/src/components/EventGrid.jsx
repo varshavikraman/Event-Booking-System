@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import EventCard from './EventCard';
 
-const EventGrid = ({ isHome = true, showButton = true }) => {
+const EventGrid = ({ isHome = true, showBookButton = true, showEditButton = false, showDeleteButton = false}) => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -23,6 +23,9 @@ const EventGrid = ({ isHome = true, showButton = true }) => {
         fetchEvents();
     }, []);
     
+    const handleEventDelete = (deletedEventName) => {
+        setEvents(events.filter(event => event.eventName !== deletedEventName));
+    };
 
     return (
         <div>
@@ -38,7 +41,10 @@ const EventGrid = ({ isHome = true, showButton = true }) => {
                         <EventCard 
                             key={event._id || event.eventName} 
                             event={event}
-                            showButton={showButton} 
+                            showBookButton={showBookButton}
+                            showEditButton={showEditButton}
+                            showDeleteButton={showDeleteButton}
+                            onDelete={handleEventDelete}  
                         />
                     ))}
                 </div>

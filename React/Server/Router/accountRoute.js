@@ -82,35 +82,37 @@ accountRoute.post('/bookTicket', authenticate, async (req, res) => {
         console.log("Received Request Body:", req.body);
 
         const { Name, Email, PhoneNo, EventName, SeatingType, NoOfTicket, Price } = req.body;
-        const userId = req.user_id; 
+        const userId = req.user_id;
 
-        // Find the event details
+        console.log("User ID:", userId); // Debug user ID
+
+        if (!EventName) {
+            return res.status(400).json({ msg: "Event Name is required" });
+        }
+
         const eventData = await event.findOne({ eventName: EventName });
         if (!eventData) {
             return res.status(404).json({ msg: "Event not found" });
         }
 
-        // Determine the correct seat type field in the event schema
         let seatField = SeatingType === "VIP" ? "vipSeats" : "standardSeats";
 
-        // Check if enough tickets are available
         if (eventData.No_of_Tickets < NoOfTicket || eventData[seatField] < NoOfTicket) {
             return res.status(400).json({ msg: "Not enough tickets available" });
         }
 
-        // Find total tickets booked by the user for this specific event
         const eventBookings = await ticket.find({ eMail: Email, eventName: EventName });
-
-        // Calculate total tickets the user has booked for this event
         const totalTicketsForEvent = eventBookings.reduce((sum, ticket) => sum + ticket.No_OfTicket, 0);
         const remainingTicketsForEvent = 6 - totalTicketsForEvent;
 
-        // Restrict booking if it exceeds 6 tickets for this event
+        if (remainingTicketsForEvent <= 0) {
+            return res.status(400).json({ msg: "You have reached the maximum limit of 6 tickets for this event." });
+        }
+
         if (NoOfTicket > remainingTicketsForEvent) {
             return res.status(400).json({ msg: `You can only book ${remainingTicketsForEvent} more ticket(s) for this event.` });
         }
 
-        // Save the new ticket
         const newTicket = new ticket({
             name: Name,
             eMail: Email,
@@ -123,39 +125,34 @@ accountRoute.post('/bookTicket', authenticate, async (req, res) => {
 
         await newTicket.save();
 
-        // Check if a booking already exists for this user and event
         let userBooking = await booking.findOne({ userId, eventId: eventData._id });
 
-        if (userBooking) {
-            // If booking exists, add ticket reference to it
-            userBooking.tickets.push(newTicket._id);
-            await userBooking.save();
-        } else {
-            // If no booking exists, create a new booking entry
-            const newBooking = new booking({
-                userId: userId, 
+        if (!userBooking) {
+            userBooking = new booking({
+                userId: userId,
                 eventId: eventData._id,
-                tickets: [newTicket._id],
-                status: "Confirm",
+                tickets: [],
+                status: "Confirm"
             });
 
-            await newBooking.save();
+            await userBooking.save(); // Ensure it's saved
         }
 
-        // Update event ticket count
-        await event.findOneAndUpdate(
+        userBooking.tickets.push(newTicket._id);
+        console.log("Booking Data:", { userId, eventId: eventData?._id });
+
+        await userBooking.save();
+
+        const updatedEvent = await event.findOneAndUpdate(
             { eventName: EventName },
-            { 
-                $inc: { 
-                    No_of_Tickets: -NoOfTicket,  
-                    [seatField]: -NoOfTicket 
-                } 
-            },
+            { $inc: { No_of_Tickets: -NoOfTicket, [seatField]: -NoOfTicket } },
             { new: true }
         );
 
-        res.status(200).json({ 
-            message: "Your ticket is booked successfully!", 
+        console.log("Updated Event Data:", updatedEvent);
+
+        res.status(200).json({
+            message: "Your ticket is booked successfully!",
             booking: newTicket
         });
 
@@ -166,7 +163,6 @@ accountRoute.post('/bookTicket', authenticate, async (req, res) => {
         res.status(500).json({ msg: "Internal Server Error", error: error.message });
     }
 });
-
 
 
 accountRoute.get('/getEventPrice/:eventName', authenticate, async (req, res) => {

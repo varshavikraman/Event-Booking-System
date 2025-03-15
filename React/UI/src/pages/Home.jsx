@@ -8,7 +8,7 @@ const Home = () => {
     <div className="flex flex-col min-h-screen bg-[#FFCCD5]">
         <NavBar/>
         <div className="flex-grow">
-            <EventGrid isHome={false} showButton={true} />
+            <EventGrid isHome={false} showBookButton={true} showEditButton = {false} showDeleteButton = {false} />
         </div>
         <Footer  />
     </div>

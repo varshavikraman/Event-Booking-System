@@ -9,13 +9,17 @@ export default function useProfile() {
       try {
        
         const res = await fetch("/api/getUser", {
-            method: 'GET',
-            credentials: 'include',
-          });
-        if (res.ok) {
-          const data = await res.json();
-          setProfile(data); 
-        } 
+          method: "GET",
+          credentials: "include", // Ensures the authToken cookie is sent
+        });
+
+        if (!res.ok) {
+          console.error("Failed to fetch user:", res.status);
+          return;
+        }
+
+        const data = await res.json();
+        setProfile(data);
       } catch (error) {
         console.error("Profile fetch error:", error);
         setProfile(null);

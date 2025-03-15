@@ -9,7 +9,7 @@ const Dashboard = () => {
       <div className="flex flex-col md:flex-row">
         <Navbar />
         <div className="flex-1 px-4 py-8 mt-14 md:ml-20">  
-          <EventGrid isHome={true} showButton={false} />  
+          <EventGrid isHome={true} showBookButton={false} showEditButton = {true} showDeleteButton = {true} />  
         </div>
       </div>
       <Footer />

@@ -55,7 +55,7 @@ const TicketCard = ({ ticket, handleCancel  }) => {
 
             <div className="flex justify-between items-center mt-4">
                 <p className={`px-3 py-1 rounded-full text-sm font-bold ${
-                    status === "Cancelled" ? "bg-gray-400 text-white" : "bg-green-500 text-white"
+                    status === "Cancelled" ? "bg-[#C9184A] text-white" : "bg-green-500 text-white"
                 }`}>
                     {status === "Cancelled" ? "Cancelled" : "Confirmed"}
                 </p>

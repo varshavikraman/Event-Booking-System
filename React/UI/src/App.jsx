@@ -17,6 +17,8 @@ import Signout from './components/Signout';
 import SearchResult from './components/SearchResult';
 import BookList from './pages/BookList';
 import useProfile from './hooks/useProfile';
+import EditEvent from './pages/EditEvent';
+import EventBookings from './pages/EventBookings'
 
 const App = () => {
   const { profile, loading } = useProfile();
@@ -39,6 +41,8 @@ const App = () => {
         <Route path="/dashboard" element={profile?.userRole === "Admin" ? <Dashboard /> : <Navigate to="/home" />} />
         <Route path="/add-event" element={profile?.userRole === "Admin" ? <AddEvent /> : <Navigate to="/home" />} />
         <Route path="/booked-details" element={profile?.userRole === "Admin" ? <BookList /> : <Navigate to="/home" />} />
+        <Route path="/event-bookings/:eventId" element={profile?.userRole === "Admin" ? <EventBookings /> : <Navigate to="/home" />} />
+        <Route path="/edit/:eventName" element={profile?.userRole === "Admin" ? <EditEvent /> : <Navigate to="/home" />} />
 
         {/* User Routes (Only for Logged-in Users) */}
         <Route path="/book/:eventName" element={profile ? <BookTicket /> : <Navigate to="/signin" />} />

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import venue from '../assets/IMAGE/music-circle-svgrepo-com.svg';
 import location from '../assets/IMAGE/location-pin-svgrepo-com.svg';
 import date from '../assets/IMAGE/calendar-date-schedule-svgrepo-com.svg';
@@ -6,10 +6,45 @@ import time from '../assets/IMAGE/time-svgrepo-com.svg';
 import price from '../assets/IMAGE/rupee-sign-svgrepo-com.svg';
 import { Link } from "react-router-dom";
 
-const EventCard = ({ event, showButton = true}) => {
+const EventCard = ({ event, showBookButton = true, showEditButton = false, showDeleteButton = false, onDelete }) => {
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState("");
+
     if (!event) {
         return <p className="text-red-500">Error: No event data available.</p>;
     }
+
+    const handleDelete = async () => {
+        setLoading(true);
+        setMessage("Deleting event...");
+
+        try {
+            const res = await fetch("/api/deleteEvent", {
+                method: "DELETE",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ eventName: event.eventName })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.msg || "Failed to delete event");
+            }
+
+            setMessage("Event deleted successfully!");
+            alert("Event deleted successfully!");
+
+            if (onDelete) onDelete(event.eventName); // Remove from UI
+        } catch (error) {
+            console.error("Delete Error:", error);
+            setMessage("Failed to delete event. Please try again.");
+            alert("Failed to delete event. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="bg-red-50 shadow-lg shadow-[#981D26] rounded-lg p-4">
             {event.eventName && (
@@ -62,14 +97,33 @@ const EventCard = ({ event, showButton = true}) => {
                 <img src={price} alt="Price" className="w-5 h-5"/>
                 <p>Rs.{event.price ?? 'N/A'}</p>
             </div>
-            
-            {showButton && (
-                <Link to={`/book/${event.eventName}`}>
-                    <button className="bg-[#500E10] hover:bg-[#977073] text-[#F59B9E] hover:text-white font-bold py-2 px-4 mt-4 rounded">
-                        Book Now
+
+            <div className="flex space-x-3 mt-4">
+                {showBookButton && (
+                    <Link to={`/book/${event.eventName}`}>
+                        <button className="bg-[#500E10] hover:bg-[#977073] text-[#F59B9E] hover:text-white font-bold py-2 px-4 rounded">
+                            Book Now
+                        </button>
+                    </Link>
+                )}
+
+                {showEditButton && (
+                    <Link to={`/edit/${event.eventName}`}>
+                        <button className="bg-[#500E10] hover:bg-[#977073] text-[#F59B9E] hover:text-white font-bold py-2 px-4 rounded">
+                            Edit
+                        </button>
+                    </Link>
+                )}
+
+                {showDeleteButton && (
+                    <button 
+                        onClick={handleDelete} 
+                        className="bg-[#500E10] hover:bg-[#977073] text-[#F59B9E] hover:text-white font-bold py-2 px-4 rounded">
+                            Delete
                     </button>
-                </Link>
-            )}
+                )}
+            </div>
+
 
         </div>
     );

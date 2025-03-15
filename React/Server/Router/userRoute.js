@@ -8,34 +8,46 @@ dotenv.config();
 
 const userRoute = Router();
 
-userRoute.post('/signup',async(req,res)=>{
-    try{
-    const {Name,Email,PhoneNo,UserRole,Password} = req.body;
-    console.log(Name);
+userRoute.post('/signup', async (req, res) => {
+    try {
+        const { Name, Email, PhoneNo, UserRole, Password } = req.body;
+        console.log(Name);
 
-    const activeUser = await user.findOne({eMail:Email});
-        if(activeUser){
-            res.status(400).send("This Email address already exists");
+        // Check if email already exists
+        const activeUser = await user.findOne({ eMail: Email });
+        if (activeUser) {
+            return res.status(400).json({ message: "This Email address already exists" });
         }
-        else{
-            const newPassword = await bcrypt.hash(Password,10);
-            console.log(newPassword);
-                const newUser = new user({
-                    name : Name,
-                    eMail : Email,
-                    phoneNo : PhoneNo,
-                    userRole : UserRole,
-                    password : newPassword
-                }); 
-                await newUser.save();
-            res.status(201).json({message:"Registration completed sucessfully"});
-            console.log(activeUser);
+
+        // Restrict admin registration to only one admin
+        if (UserRole === 'Admin') {
+            const adminExists = await user.findOne({ userRole: "Admin" });
+            if (adminExists) {
+                return res.status(403).json({ message: "An Admin already exists. You can only register as a user." });
+            }
         }
-    }
-    catch{
-        res.status(500).send("Internal Server Error")
+
+        // Hash password
+        const newPassword = await bcrypt.hash(Password, 10);
+
+        // Create new user
+        const newUser = new user({
+            name: Name,
+            eMail: Email,
+            phoneNo: PhoneNo,
+            userRole: UserRole,
+            password: newPassword
+        });
+
+        await newUser.save();
+        res.status(201).json({ message: "Registration completed successfully" });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal Server Error" });
     }
 });
+
 
 userRoute.post('/signin',async(req,res)=>{
     try{
