@@ -4,6 +4,8 @@ import { user } from "../Model/sample.js";
 import {ticket} from "../Model/sample.js";
 import { event } from "../Model/sample.js";
 import { booking } from "../Model/sample.js";
+import mongoose from "mongoose";
+
 
 const accountRoute = Router();
 
@@ -114,6 +116,8 @@ accountRoute.post('/bookTicket', authenticate, async (req, res) => {
         }
 
         const newTicket = new ticket({
+            userId: userId, 
+            eventId: eventData._id,
             name: Name,
             eMail: Email,
             phoneNo: PhoneNo,
@@ -165,6 +169,8 @@ accountRoute.post('/bookTicket', authenticate, async (req, res) => {
 });
 
 
+
+
 accountRoute.get('/getEventPrice/:eventName', authenticate, async (req, res) => {
     try {
         const eName = req.params.eventName;
@@ -206,6 +212,12 @@ accountRoute.get('/getBooking', authenticate, async (req, res) => {
 const UserBookings = async (req, res) => {
     try {
         const userId = req.user_id; // Assuming user is authenticated
+        const { eventName } = req.query; // Get eventName from query
+
+        let query = { userId };
+        if (eventName) {
+            query["eventId.eventName"] = eventName; // Filter by eventName
+        }
 
         const bookings = await booking.find({ userId })
             .populate("eventId", "eventName image venue location date time") // Get event details
@@ -240,37 +252,49 @@ accountRoute.get("/getUserTickets", authenticate, UserBookings);
 
 accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
     try {
-        const { EventName, cancelSeats } = req.body;  // cancelSeats = [{ SeatType: "vip", cancelCount: 2 }, { SeatType: "standard", cancelCount: 3 }]
+        console.log("Request received");
+        const { EventName, cancelSeats } = req.body;
         console.log("Cancel request received:", req.body);
+
         const userEmail = req.Email;
 
+        // Validate request
         if (!EventName || !Array.isArray(cancelSeats) || cancelSeats.length === 0) {
             return res.status(400).json({ msg: "Invalid cancellation request." });
         }
 
-        // Step 1: Fetch user ID
+        // Step 1: Fetch User ID
         const userData = await user.findOne({ eMail: userEmail });
         if (!userData) {
             return res.status(404).json({ msg: "User not found." });
         }
         const userId = userData._id;
+        console.log("User ID Found:", userId);
 
-        // Step 2: Find the user's booking
-        const userBooking = await booking.findOne({ userId }).populate("tickets");
-
-        if (!userBooking || userBooking.tickets.length === 0) {
-            return res.status(404).json({ msg: "No matching booking found." });
+        // Step 2: Fetch Event ID
+        const eventData = await event.findOne({ eventName: { $regex: new RegExp(`^${EventName}$`, "i") } });
+        if (!eventData) {
+            return res.status(404).json({ msg: "Event not found." });
         }
+        const eventId = eventData._id;
+        console.log(`Event ID Found: ${eventId}`);
 
-        let totalCanceledTickets = 0; // Track total canceled tickets for updating event
+        // Step 3: Find User Booking for the Event
+        const userBooking = await booking.findOne({ userId, eventId }).populate("tickets");
+        if (!userBooking || userBooking.tickets.length === 0) {
+            return res.status(404).json({ msg: "No matching booking found for this event." });
+        }
+        console.log("Booking Found:", userBooking._id);
 
-        // Step 3: Process each seat type cancellation
+        let totalCanceledTickets = 0; // Track canceled tickets for event update
+
+        // Step 4: Process Each Seat Type Cancellation
         for (const { SeatType, cancelCount } of cancelSeats) {
             if (!SeatType || cancelCount <= 0) continue;
 
             // Find the ticket for the specific seat type
             const userTicket = userBooking.tickets.find(ticket =>
-                ticket.eventName === EventName && ticket.seatingType === SeatType
+                ticket.seatingType.toLowerCase() === SeatType.toLowerCase()
             );
 
             if (!userTicket) {
@@ -282,31 +306,36 @@ accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
                 return res.status(400).json({ msg: `Cannot cancel more tickets than booked for ${SeatType}.` });
             }
 
-            totalCanceledTickets += cancelCount; // Track for event update
+            totalCanceledTickets += cancelCount; // Track total canceled tickets
 
             if (cancelCount === userTicket.No_OfTicket) {
                 // Remove the ticket from booking
-                await ticket.deleteOne({ _id: userTicket._id });
-                userBooking.tickets = userBooking.tickets.filter(t => t._id.toString() !== userTicket._id.toString());
+                console.log(`Deleting ticket: ${userTicket._id}`);
+                await ticket.deleteOne({ _id: new mongoose.Types.ObjectId(userTicket._id) });
+
+                // Remove reference from user booking
+                await booking.updateOne(
+                    { _id: userBooking._id },
+                    { $pull: { tickets: userTicket._id } }
+                );
             } else {
                 // Reduce ticket count
-                userTicket.No_OfTicket -= cancelCount;
-                await userTicket.save();
+                console.log(`Updating ticket count: ${userTicket._id}, New Count: ${userTicket.No_OfTicket - cancelCount}`);
+                await ticket.updateOne(
+                    { _id: new mongoose.Types.ObjectId(userTicket._id) },
+                    { $inc: { No_OfTicket: -cancelCount } }
+                );
             }
         }
 
-        // Step 4: Remove booking if no tickets remain
-        if (userBooking.tickets.length === 0) {
-            userBooking.status = "Cancelled"; // Mark as cancelled
-            await userBooking.save();
+        // Step 5: Remove Booking if No Tickets Remain
+        const remainingBooking = await booking.findOne({ userId, eventId }).populate("tickets");
+        if (!remainingBooking || remainingBooking.tickets.length === 0) {
+            console.log("Deleting empty booking:", userBooking._id);
+            await booking.deleteOne({ _id: new mongoose.Types.ObjectId(userBooking._id) });
         }
 
-        // Step 5: Update event details (seat counts & total tickets)
-        const eventData = await event.findOne({ eventName: EventName });
-        if (!eventData) {
-            return res.status(404).json({ msg: "Event not found." });
-        }
-
+        // Step 6: Update Event Details (Seats Availability)
         cancelSeats.forEach(({ SeatType, cancelCount }) => {
             if (SeatType.toLowerCase() === "vip") {
                 eventData.vipSeats += cancelCount;
@@ -315,14 +344,20 @@ accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
             }
         });
 
-        eventData.No_of_Tickets += totalCanceledTickets; // Restore total available tickets
+        eventData.No_of_Tickets += totalCanceledTickets;
         await eventData.save();
+        console.log(`Updated event seat count for "${eventData.eventName}"`);
 
-        res.status(200).json({ msg: `Successfully canceled tickets. Event seat count updated.` });
+        // Send updated booking info
+        const updatedBooking = await booking.findOne({ userId, eventId }).populate("tickets");
+        res.status(200).json({
+            msg: "Successfully canceled tickets. Event seat count updated.",
+            updatedBooking
+        });
 
     } catch (error) {
-        console.error("Error canceling ticket:", error);
-        res.status(500).json({ msg: "Internal Server Error" });
+        console.error("Error canceling ticket:", error.stack || error);
+        res.status(500).json({ msg: "Internal Server Error", error: error.message });
     }
 });
 

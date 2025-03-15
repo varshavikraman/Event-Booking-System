@@ -27,16 +27,17 @@ const sample2 = new Schema({
 const event = model('eventDetail',sample2);
 
 const sample3 = new Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'userDetails', required: true },
     name:{type:String,required:true},
     eMail:{type:String,required:true},
     phoneNo:{ type: String, required: true },
+    eventId: { type: mongoose.Schema.Types.ObjectId, ref: 'eventDetails', required: true },
     eventName:{type:String,required:true},
     seatingType:{type:String,required:true},
     No_OfTicket:{type:Number,required:true},
     price:{type:Number,required:true}
 });
 
-sample3.index({ eMail: 1, eventName: 1, seatingType: 1 }, { unique: true });
 const ticket = model('ticketDetails',sample3)
 
 const sample4 = new Schema({

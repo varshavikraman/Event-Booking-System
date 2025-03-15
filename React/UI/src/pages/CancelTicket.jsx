@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const CancelTicket = () => {
+    const location = useLocation();
+    const eventName = location.state?.eventName;
     const [tickets, setTickets] = useState([]);
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
@@ -11,84 +13,98 @@ const CancelTicket = () => {
     useEffect(() => {
         const fetchTickets = async () => {
             try {
-                const response = await fetch("/api/getUserTickets");
+                const response = await fetch(`/api/getUserTickets?eventName=${encodeURIComponent(eventName)}`);
                 const data = await response.json();
-                console.log("Fetched Tickets:", data);
 
-                if (response.ok && Array.isArray(data.bookings)) {
-                    setTickets(data.bookings);
+                if (response.ok && data.bookings) {
+                    setTickets(data.bookings.filter(ticket => ticket.eventName === eventName));
                 } else {
                     setMessage(data.msg || "Failed to fetch tickets.");
-                    setTickets([]);
                 }
             } catch (error) {
-                console.error("Error fetching tickets:", error);
                 setMessage("Error loading tickets.");
-                setTickets([]);
             }
         };
 
-        fetchTickets();
-    }, []);
+        if (eventName) {
+            fetchTickets();
+        }
+    }, [eventName]);
 
     const handleCancel = async (eventName, cancelSeats) => {
         if (!cancelSeats || Object.keys(cancelSeats).length === 0) {
-            setMessage("Invalid cancellation request.");
+            setMessage("Please select tickets to cancel.");
             return;
         }
-    
+
         setLoading(true);
-    
+
         try {
             const formattedCancelSeats = Object.entries(cancelSeats)
                 .filter(([_, count]) => count > 0)
                 .map(([seatType, count]) => ({ SeatType: seatType, cancelCount: count }));
-    
+
+            console.log("Sending cancellation request:", {
+                EventName: eventName,
+                cancelSeats: formattedCancelSeats,
+            });
+
             if (formattedCancelSeats.length === 0) {
-                setMessage("Invalid cancellation request.");
-                setLoading(false);
+                setMessage("No valid seats selected for cancellation.");
                 return;
             }
-    
+
             const response = await fetch("/api/cancelTicket", {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ EventName: eventName, cancelSeats: formattedCancelSeats })
+                body: JSON.stringify({ EventName: eventName, cancelSeats: formattedCancelSeats }),
             });
-    
+
             const data = await response.json();
-            console.log("Server Response:", data);
-    
             if (!response.ok) {
+                console.error("Cancellation error:", data);
                 setMessage(data.msg || "Failed to cancel tickets.");
             } else {
                 setMessage(data.msg);
                 setTickets(prevTickets =>
-                    prevTickets
-                        .map(ticket =>
-                            ticket.eventName === eventName
-                                ? {
-                                      ...ticket,
-                                      seatDetails: ticket.seatDetails
-                                          .map(seat => ({
-                                              ...seat,
-                                              count: seat.count - (cancelSeats[seat.seatType] || 0),
-                                          }))
-                                          .filter(seat => seat.count > 0),
-                                  }
-                                : ticket
-                        )
-                        .filter(ticket => ticket.seatDetails.length > 0)
+                    prevTickets.map(ticket => {
+                        if (ticket.eventName === eventName) {
+                            const updatedSeatDetails = ticket.seatDetails.filter(seat => {
+                                const cancelledCount = cancelSeats[seat.seatType] || 0;
+                                return seat.count - cancelledCount > 0;
+                            }).map(seat => {
+                              const cancelledCount = cancelSeats[seat.seatType] || 0;
+                              return {...seat, count: seat.count - cancelledCount}
+                            })
+
+                            return {...ticket, seatDetails: updatedSeatDetails};
+                        }
+                        return ticket;
+                    }).filter(ticket => ticket.seatDetails.length > 0)
                 );
             }
         } catch (error) {
-            console.error("Error:", error);
+            console.error("Request failed:", error);
             setMessage("Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         }
     };
-    
+
+    const handleCancelChange = (eventName, seatType, count) => {
+        return (e) => {
+            const value = parseInt(e.target.value) || 0;
+
+            setCancelData(prev => ({
+                ...prev,
+                [eventName]: {
+                    ...prev[eventName],
+                    [seatType]: value,
+                },
+            }));
+        };
+    };
+
     return (
         <div className="cancel-ticket-container bg-[#FFCCD5] min-h-screen p-6">
             <div className="max-w-3xl my-40 mx-auto bg-white shadow-lg rounded-lg p-6">
@@ -113,25 +129,17 @@ const CancelTicket = () => {
                                             <div className="flex items-center space-x-2 mt-2 sm:mt-0">
                                                 <select
                                                     className="text-lg text-[#F59B9E] font-medium border p-2 rounded-md focus:ring focus:ring-black"
-                                                    value={cancelData[ticket.eventName]?.[seat.seatType] || 1}
-                                                    onChange={e =>
-                                                        setCancelData(prev => ({
-                                                            ...prev,
-                                                            [ticket.eventName]: {
-                                                                ...prev[ticket.eventName],
-                                                                [seat.seatType]: parseInt(e.target.value) || 1
-                                                            }
-                                                        }))
-                                                    }
+                                                    value={cancelData[ticket.eventName]?.[seat.seatType] || 0}
+                                                    onChange={handleCancelChange(ticket.eventName, seat.seatType, seat.count)}
                                                 >
-                                                    {[...Array(seat.count).keys()].map(i => (
-                                                        <option key={i + 1} value={i + 1}>
-                                                            {i + 1}
+                                                    {[...Array(seat.count + 1).keys()].map(i => (
+                                                        <option key={i} value={i}>
+                                                            {i}
                                                         </option>
                                                     ))}
                                                 </select>
 
-                                                <button 
+                                                <button
                                                     className="bg-red-500 hover:bg-red-300 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
                                                     onClick={() => handleCancel(ticket.eventName, cancelData[ticket.eventName] || {})}
                                                     disabled={loading}
@@ -146,6 +154,14 @@ const CancelTicket = () => {
                         ))}
                     </div>
                 )}
+                <div className="flex justify-center mt-6">
+                    <button
+                        onClick={() => navigate("/booked-tickets")}
+                        className="bg-[#981D26] hover:bg-[#EC88Ac] text-white font-bold py-2 px-6 rounded-md"
+                    >
+                        Back
+                    </button>
+                </div>
             </div>
         </div>
     );
