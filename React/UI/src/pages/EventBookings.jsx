@@ -6,7 +6,7 @@ const EventBookings = () => {
     const { eventId } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
-    const eventName = location.state?.eventName; // Get eventName from navigation state
+    const eventName = location.state?.eventName; 
 
     const [event, setEvent] = useState(null);
     const [bookings, setBookings] = useState([]);
@@ -45,8 +45,8 @@ const EventBookings = () => {
         <div className="flex flex-col md:flex-row bg-[#FFCCD5] min-h-screen">
             <DashNav />
             <div className="flex-1 mt-20 px-4 py-6">
-                <button className="bg-gray-500 text-white px-4 py-2 rounded-lg mb-4" onClick={() => navigate(-1)}>
-                    ← Back to Events
+                <button className="bg-[#500E10] text-[#F59B9E] text-white px-4 py-2 rounded-lg mb-4" onClick={() => navigate(-1)}>
+                    Back
                 </button>
 
                 {loading && <p className="text-center">Loading...</p>}
@@ -71,19 +71,30 @@ const EventBookings = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {bookings.length > 0 ? bookings.map((booking) => (
-                                        <tr key={booking._id} className="hover:bg-gray-100">
-                                            <td className="border border-gray-400 px-4 py-2">{booking.userId?.name || "Unknown"}</td>
-                                            <td className="border border-gray-400 px-4 py-2">{booking.userId?.eMail || "No Email"}</td>
-                                            <td className="border border-gray-400 px-4 py-2 text-center">{booking.vipSeats || 0}</td>
-                                            <td className="border border-gray-400 px-4 py-2 text-center">{booking.standardSeats || 0}</td>
-                                            <td className="border border-gray-400 px-4 py-2 text-center">{booking.totalPrice || "N/A"}</td>
-                                            <td className={`border border-gray-400 px-4 py-2 font-bold text-center 
-                                                ${booking.status === 'Confirm' ? 'text-green-600' : 'text-red-500'}`}>
-                                                {booking.status}
-                                            </td>
-                                        </tr>
-                                    )) : (
+                                {bookings.length > 0 ? bookings.map((booking) => {
+                                    const vipTickets = booking.tickets
+                                        .filter(t => (t.seatingType || "Standard") === "VIP")
+                                        .reduce((sum, t) => sum + (t.No_OfTicket || 0), 0);
+
+                                    const standardTickets = booking.tickets
+                                        .filter(t => (t.seatingType || "Standard") === "Standard")
+                                        .reduce((sum, t) => sum + (t.No_OfTicket || 0), 0);
+
+                                    const totalPrice = booking.tickets.reduce((sum, t) => sum + (t.price || 0), 0);
+                                        return (
+                                            <tr key={booking._id} className="hover:bg-gray-100">
+                                                <td className="border border-gray-400 px-4 py-2">{booking.userId?.name || "Unknown"}</td>
+                                                <td className="border border-gray-400 px-4 py-2">{booking.userId?.eMail || "No Email"}</td>
+                                                <td className="border border-gray-400 px-4 py-2 text-center">{vipTickets || 0}</td>
+                                                <td className="border border-gray-400 px-4 py-2 text-center">{standardTickets || 0}</td>
+                                                <td className="border border-gray-400 px-4 py-2 text-center">{totalPrice || "N/A"}</td>
+                                                <td className={`border border-gray-400 px-4 py-2 font-bold text-center 
+                                                    ${booking.status === 'Confirm' ? 'text-green-600' : 'text-red-500'}`}>
+                                                        {booking.status}
+                                                </td>
+                                            </tr>
+                                        );
+                                }) : (
                                         <tr>
                                             <td colSpan="6" className="text-center py-3 text-gray-600">
                                                 No bookings for this event.

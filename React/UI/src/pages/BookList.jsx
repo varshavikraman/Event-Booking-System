@@ -46,7 +46,7 @@ const BookList = () => {
         <div className="flex flex-col md:flex-row bg-[#FFCCD5] min-h-screen">
             <DashNav />
             <div className="flex-1 mt-20 px-4 py-6">
-                <h2 className="text-2xl font-semibold text-center mb-4">Event Bookings</h2>
+                <h2 className="text-[#981D26] text-2xl font-semibold text-center mb-4">Event Bookings</h2>
 
                 {loading && <p className="text-center">Loading...</p>}
                 {error && <p className="text-center text-red-500">{error}</p>}
