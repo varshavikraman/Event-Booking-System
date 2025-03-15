@@ -23,7 +23,10 @@ import EventBookings from './pages/EventBookings'
 const App = () => {
   const { profile, loading } = useProfile();
 
-  if (loading) return <p className="text-center mt-20 text-xl">Loading...</p>;
+  if (loading) {
+    return <p className="text-center mt-20 text-xl">Loading...</p>;
+  }
+
   return (
     <BrowserRouter>
       <Routes>
@@ -38,11 +41,36 @@ const App = () => {
         <Route path="/signout" element={<Signout />} />
 
         {/* Admin Routes (Only Admins Can Access) */}
-        <Route path="/dashboard" element={profile?.userRole === "Admin" ? <Dashboard /> : <Navigate to="/home" />} />
-        <Route path="/add-event" element={profile?.userRole === "Admin" ? <AddEvent /> : <Navigate to="/home" />} />
-        <Route path="/booked-details" element={profile?.userRole === "Admin" ? <BookList /> : <Navigate to="/home" />} />
-        <Route path="/event-bookings/:eventId" element={profile?.userRole === "Admin" ? <EventBookings /> : <Navigate to="/home" />} />
-        <Route path="/edit/:eventName" element={profile?.userRole === "Admin" ? <EditEvent /> : <Navigate to="/home" />} />
+        <Route
+          path="/dashboard"
+          element={
+            profile?.userRole === "Admin" ? <Dashboard /> : <Navigate to="/home" />
+          }
+        />
+        <Route
+          path="/add-event"
+          element={
+            profile?.userRole === "Admin" ? <AddEvent /> : <Navigate to="/home" />
+          }
+        />
+        <Route
+          path="/booked-details"
+          element={
+            profile?.userRole === "Admin" ? <BookList /> : <Navigate to="/home" />
+          }
+        />
+        <Route
+          path="/event-bookings/:eventId"
+          element={
+            profile?.userRole === "Admin" ? <EventBookings /> : <Navigate to="/home" />
+          }
+        />
+        <Route
+          path="/edit/:eventName"
+          element={
+            profile?.userRole === "Admin" ? <EditEvent /> : <Navigate to="/home" />
+          }
+        />
 
         {/* User Routes (Only for Logged-in Users) */}
         <Route path="/book/:eventName" element={profile ? <BookTicket /> : <Navigate to="/signin" />} />
@@ -51,7 +79,6 @@ const App = () => {
         <Route path="/booked-tickets" element={profile ? <BookedTickets /> : <Navigate to="/signin" />} />
         <Route path="/cancel-ticket" element={profile ? <CancelTicket /> : <Navigate to="/signin" />} />
         <Route path="/updateProfile" element={profile ? <Profile /> : <Navigate to="/signin" />} />
-        
 
         {/* 404 Page */}
         <Route path="*" element={<h1 className='text-[#981D26] text-center text-5xl mt-80'>404 - Page Not Found</h1>} />
