@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import DashNav from '../components/DashNav';
+import Footer from '../components/Footer';
 import { useNavigate } from 'react-router-dom';
 
 const AddEvent = () => {
@@ -63,7 +64,8 @@ const AddEvent = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row bg-[#FFCCD5]">
+    <div className="min-h-screen bg-[#FFCCD5]">
+    <div className="flex flex-col md:flex-row">
       <DashNav />
       <div className="flex-1 px-4 py-8">
         <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-lg shadow-[#981D26] p-6">
@@ -221,6 +223,8 @@ const AddEvent = () => {
           </form>
         </div>
       </div>
+    </div>
+    <Footer/>
     </div>
   );
 };

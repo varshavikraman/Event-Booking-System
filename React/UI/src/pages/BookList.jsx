@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashNav from '../components/DashNav';
+import Footer from '../components/Footer';
 
 const BookList = () => {
     const [bookings, setBookings] = useState([]);
@@ -43,7 +44,8 @@ const BookList = () => {
     };
 
     return (
-        <div className="flex flex-col md:flex-row bg-[#FFCCD5] min-h-screen">
+        <div className="min-h-screen bg-[#FFCCD5]">
+        <div className="flex flex-col md:flex-row"> 
             <DashNav />
             <div className="flex-1 mt-20 px-4 py-6">
                 <h2 className="text-[#981D26] text-2xl font-semibold text-center mb-4">Event Bookings</h2>
@@ -73,6 +75,8 @@ const BookList = () => {
                     <p className="text-center py-4">No bookings found</p>
                 )}
             </div>
+        </div>
+        <Footer/>
         </div>
     );
 };
