@@ -29,7 +29,7 @@ const EventBookings = () => {
                     throw new Error('No bookings found for this event');
                 }
 
-                setEvent(data[0].eventId); // First booking's event details
+                setEvent(data[0].eventId); 
                 setBookings(data);
             } catch (err) {
                 setError(err.message);

@@ -10,7 +10,7 @@ export default function useProfile() {
        
         const res = await fetch("/api/getUser", {
           method: "GET",
-          credentials: "include", // Ensures the authToken cookie is sent
+          credentials: "include", 
         });
 
         if (!res.ok) {

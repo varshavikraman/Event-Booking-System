@@ -4,7 +4,6 @@ import { user } from "../Model/sample.js";
 import {ticket} from "../Model/sample.js";
 import { event } from "../Model/sample.js";
 import { booking } from "../Model/sample.js";
-import mongoose from "mongoose";
 
 
 const accountRoute = Router();
@@ -86,7 +85,7 @@ accountRoute.post('/bookTicket', authenticate, async (req, res) => {
         const { Name, Email, PhoneNo, EventName, SeatingType, NoOfTicket, Price } = req.body;
         const userId = req.user_id;
 
-        console.log("User ID:", userId); // Debug user ID
+        console.log("User ID:", userId);
 
         if (!EventName) {
             return res.status(400).json({ msg: "Event Name is required" });
@@ -139,7 +138,7 @@ accountRoute.post('/bookTicket', authenticate, async (req, res) => {
                 status: "Confirm"
             });
 
-            await userBooking.save(); // Ensure it's saved
+            await userBooking.save();
         }
 
         userBooking.tickets.push(newTicket._id);
@@ -209,20 +208,19 @@ accountRoute.get('/getBooking', authenticate, async (req, res) => {
 
 const UserBookings = async (req, res) => {
     try {
-        const userId = req.user_id; // Assuming user is authenticated
-        const { eventName } = req.query; // Get eventName from query
+        const userId = req.user_id; 
+        const { eventName } = req.query; 
 
         let query = { userId };
         if (eventName) {
-            query["eventId.eventName"] = eventName; // Filter by eventName
+            query["eventId.eventName"] = eventName; 
         }
 
         const bookings = await booking.find({ userId })
-            .populate("eventId", "eventName image venue location date time") // Get event details
-            .populate("tickets", "seatingType No_OfTicket") // Get seat details
+            .populate("eventId", "eventName image venue location date time") 
+            .populate("tickets", "seatingType No_OfTicket") 
             .lean();
 
-        // Format response
         const formattedBookings = bookings.map(booking => ({
             eventName: booking.eventId.eventName,
             eventInfo: {
@@ -256,12 +254,10 @@ accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
 
         const userEmail = req.Email;
 
-        // Validate request
         if (!EventName || !Array.isArray(cancelSeats) || cancelSeats.length === 0) {
             return res.status(400).json({ msg: "Invalid cancellation request." });
         }
 
-        // Step 1: Fetch User ID
         const userData = await user.findOne({ eMail: userEmail });
         if (!userData) {
             return res.status(404).json({ msg: "User not found." });
@@ -269,7 +265,6 @@ accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
         const userId = userData._id;
         console.log("User ID Found:", userId);
 
-        // Step 2: Fetch Event ID
         const eventData = await event.findOne({ eventName: EventName });
         if (!eventData) {
             return res.status(404).json({ msg: "Event not found." });
@@ -277,20 +272,17 @@ accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
         const eventId = eventData._id;
         console.log(`Event ID Found: ${eventId}`);
 
-        // Step 3: Find User Booking for the Event
         const userBooking = await booking.findOne({ userId, eventId }).populate("tickets");
         if (!userBooking || userBooking.tickets.length === 0) {
             return res.status(404).json({ msg: "No matching booking found for this event." });
         }
         console.log("Booking Found:", userBooking._id);
 
-        let totalCanceledTickets = 0; // Track canceled tickets for event update
+        let totalCanceledTickets = 0; 
 
-        // Step 4: Process Each Seat Type Cancellation
         for (const { SeatType, cancelCount } of cancelSeats) {
             if (!SeatType || cancelCount <= 0) continue;
 
-            // Find the ticket for the specific seat type
             const userTicket = userBooking.tickets.find(ticket =>
                 ticket.seatingType.toLowerCase() === SeatType.toLowerCase()
             );
@@ -304,20 +296,18 @@ accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
                 return res.status(400).json({ msg: `Cannot cancel more tickets than booked for ${SeatType}.` });
             }
 
-            totalCanceledTickets += cancelCount; // Track total canceled tickets
+            totalCanceledTickets += cancelCount; 
 
             if (cancelCount === userTicket.No_OfTicket) {
-                // Remove the ticket from booking
+
                 console.log(`Deleting ticket: ${userTicket._id}`);
                 await ticket.deleteOne({ _id: userTicket._id });
 
-                // Remove reference from user booking
                 await booking.updateOne(
                     { _id: userBooking._id },
                     { $pull: { tickets: userTicket._id } }
                 );
             } else {
-                // Reduce ticket count
                 console.log(`Updating ticket count: ${userTicket._id}, New Count: ${userTicket.No_OfTicket - cancelCount}`);
                 await ticket.updateOne(
                     { _id: userTicket._id },
@@ -326,14 +316,12 @@ accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
             }
         }
 
-        // Step 5: Remove Booking if No Tickets Remain
         const remainingBooking = await booking.findOne({ userId, eventId }).populate("tickets");
         if (!remainingBooking || remainingBooking.tickets.length === 0) {
             console.log("Deleting empty booking:", userBooking._id);
             await booking.deleteOne({ _id: userBooking._id });
         }
 
-        // Step 6: Update Event Details (Seats Availability)
         cancelSeats.forEach(({ SeatType, cancelCount }) => {
             if (SeatType.toLowerCase() === "vip") {
                 eventData.vipSeats += cancelCount;
@@ -346,7 +334,6 @@ accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
         await eventData.save();
         console.log(`Updated event seat count for "${eventData.eventName}"`);
 
-        // Send updated booking info
         const updatedBooking = await booking.findOne({ userId, eventId }).populate("tickets");
         res.status(200).json({
             msg: "Successfully canceled tickets. Event seat count updated.",

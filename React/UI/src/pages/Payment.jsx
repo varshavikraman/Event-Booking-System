@@ -25,7 +25,6 @@ const Payment = () => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
 
-     // Handle payment
      const handlePayment = async () => {
         setLoading(true);
         setMessage("Processing payment...");
@@ -47,10 +46,10 @@ const Payment = () => {
                     }),
                 });
 
-                const bookingData = await res.json(); // Parse response
+                const bookingData = await res.json(); 
 
                 if (!res.ok) {
-                    throw new Error(bookingData.msg || "Payment failed"); // Use error message from server
+                    throw new Error(bookingData.msg || "Payment failed"); 
                 }
 
                 setMessage("Payment successful!");
@@ -58,7 +57,7 @@ const Payment = () => {
 
             } catch (error) {
                 console.error("The error is:", error);
-                alert(error.message); // Show alert message for errors
+                alert(error.message); 
                 setMessage("Payment failed. Please try again.");
             } finally {
                 setLoading(false);
@@ -66,7 +65,6 @@ const Payment = () => {
         }, 2000);
     };
 
-    // Handle booking cancellation
     const handleCancel = () => {
         setLoading(true);
         setMessage("Cancelling booking...");

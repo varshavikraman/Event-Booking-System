@@ -13,13 +13,11 @@ userRoute.post('/signup', async (req, res) => {
         const { Name, Email, PhoneNo, UserRole, Password } = req.body;
         console.log(Name);
 
-        // Check if email already exists
         const activeUser = await user.findOne({ eMail: Email });
         if (activeUser) {
             return res.status(400).json({ message: "This Email address already exists" });
         }
 
-        // Restrict admin registration to only one admin
         if (UserRole === 'Admin') {
             const adminExists = await user.findOne({ userRole: "Admin" });
             if (adminExists) {
@@ -27,10 +25,8 @@ userRoute.post('/signup', async (req, res) => {
             }
         }
 
-        // Hash password
         const newPassword = await bcrypt.hash(Password, 10);
 
-        // Create new user
         const newUser = new user({
             name: Name,
             eMail: Email,

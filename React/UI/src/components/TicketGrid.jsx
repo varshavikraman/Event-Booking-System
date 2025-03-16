@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from "react-router-dom"; // Import navigate
+import { useNavigate } from "react-router-dom"; 
 import TicketCard from './TicketCard';
 
 const TicketGrid = ({ isHome = true }) => {
@@ -44,7 +44,7 @@ const TicketGrid = ({ isHome = true }) => {
         console.log("Redirecting to cancel page for:", eventName);
         
         navigate("/cancel-ticket", {
-            state: { eventName }  // Pass ticket details to CancelTicket page
+            state: { eventName }  
         });
     };
     

@@ -102,7 +102,7 @@ const EditEvent = () => {
             console.error("Update Error:", error);
             setMessage("Failed to update event. Please try again.");
         } finally {
-            setLoading(false); // Reset loading state after the request finishes
+            setLoading(false); 
         }
     };
 

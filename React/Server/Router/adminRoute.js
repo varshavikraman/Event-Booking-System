@@ -51,7 +51,7 @@ adminRoute.post('/addEvent', authenticate, adminCheck, upload.single("EventImage
 
 adminRoute.delete('/deleteEvent', authenticate, adminCheck, async (req, res) => {
     try {
-        const { eventName } = req.body; // Ensure the key matches the database field
+        const { eventName } = req.body; 
         if (!eventName) {
             return res.status(400).json({ msg: "Event name is required" });
         }
@@ -93,7 +93,7 @@ adminRoute.put('/editEvent/:eventName', authenticate, adminCheck, upload.single(
             updateFields.image = convertToBase64(req.file.buffer);
         } else {
             const existingEvent = await event.findOne({ eventName: eventName.trim() });
-            if (existingEvent) updateFields.image = existingEvent.image; // Keep the old image
+            if (existingEvent) updateFields.image = existingEvent.image; 
         }
 
         const updatedEvent = await event.findOneAndUpdate(
@@ -192,7 +192,7 @@ adminRoute.get('/getEventImage', async (req, res) => {
     
 adminRoute.get('/getBookings', authenticate, adminCheck, async (req, res) => {
     try {
-        const { eventName } = req.query; // Accept eventName as query param
+        const { eventName } = req.query; 
 
         let query = {};
         if (eventName) {
@@ -206,9 +206,9 @@ adminRoute.get('/getBookings', authenticate, adminCheck, async (req, res) => {
         
 
         const bookings = await booking.find(query)
-            .populate("userId", "name eMail") // Fetch user name & email
-            .populate("eventId", "eventName location date") // Fetch event details
-            .populate("tickets") // Fetch ticket details
+            .populate("userId", "name eMail") 
+            .populate("eventId", "eventName location date") 
+            .populate("tickets") 
             .sort({ createdAt: -1 });
 
         res.status(200).json(bookings);

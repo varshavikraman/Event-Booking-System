@@ -35,7 +35,7 @@ const EventCard = ({ event, showBookButton = true, showEditButton = false, showD
             setMessage("Event deleted successfully!");
             alert("Event deleted successfully!");
 
-            if (onDelete) onDelete(event.eventName); // Remove from UI
+            if (onDelete) onDelete(event.eventName); 
         } catch (error) {
             console.error("Delete Error:", error);
             setMessage("Failed to delete event. Please try again.");

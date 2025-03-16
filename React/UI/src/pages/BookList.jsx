@@ -27,7 +27,6 @@ const BookList = () => {
         fetchBookings();
     }, []);
 
-    // Group bookings by event
     const groupedBookings = bookings.reduce((acc, booking) => {
         const event = booking.eventId;
         if (!event || !event._id) return acc;
@@ -61,7 +60,6 @@ const BookList = () => {
                                 <p className="text-gray-600"><strong>Location:</strong> {details.location || "N/A"}</p>
                                 <p className="text-gray-600"><strong>Date:</strong> {details.date || "N/A"}</p>
 
-                                {/* View Bookings Button */}
                                 <button 
                                     onClick={() => goToBookings(details._id, details.eventName)}
                                     className="mt-4 bg-[#D76067] text-white px-4 py-2 rounded-lg"
