@@ -21,7 +21,7 @@ const NavBar = () => {
                     <div className="flex items-center space-x-2">
                         <input 
                             type="search" 
-                            placeholder="Event Name, Location" 
+                            placeholder="Event Name, Organizer or Location" 
                             className="border border-gray-400 rounded h-8 px-2 w-full md:w-auto bg-white"
                             value={searchValue}
                             onChange={(e) => setSearchValue(e.target.value)}

@@ -169,8 +169,6 @@ accountRoute.post('/bookTicket', authenticate, async (req, res) => {
 });
 
 
-
-
 accountRoute.get('/getEventPrice/:eventName', authenticate, async (req, res) => {
     try {
         const eName = req.params.eventName;
@@ -252,7 +250,7 @@ accountRoute.get("/getUserTickets", authenticate, UserBookings);
 
 accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
     try {
-        console.log("Request received");
+        
         const { EventName, cancelSeats } = req.body;
         console.log("Cancel request received:", req.body);
 
@@ -272,7 +270,7 @@ accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
         console.log("User ID Found:", userId);
 
         // Step 2: Fetch Event ID
-        const eventData = await event.findOne({ eventName: { $regex: new RegExp(`^${EventName}$`, "i") } });
+        const eventData = await event.findOne({ eventName: EventName });
         if (!eventData) {
             return res.status(404).json({ msg: "Event not found." });
         }
@@ -311,7 +309,7 @@ accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
             if (cancelCount === userTicket.No_OfTicket) {
                 // Remove the ticket from booking
                 console.log(`Deleting ticket: ${userTicket._id}`);
-                await ticket.deleteOne({ _id: new mongoose.Types.ObjectId(userTicket._id) });
+                await ticket.deleteOne({ _id: userTicket._id });
 
                 // Remove reference from user booking
                 await booking.updateOne(
@@ -322,7 +320,7 @@ accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
                 // Reduce ticket count
                 console.log(`Updating ticket count: ${userTicket._id}, New Count: ${userTicket.No_OfTicket - cancelCount}`);
                 await ticket.updateOne(
-                    { _id: new mongoose.Types.ObjectId(userTicket._id) },
+                    { _id: userTicket._id },
                     { $inc: { No_OfTicket: -cancelCount } }
                 );
             }
@@ -332,7 +330,7 @@ accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
         const remainingBooking = await booking.findOne({ userId, eventId }).populate("tickets");
         if (!remainingBooking || remainingBooking.tickets.length === 0) {
             console.log("Deleting empty booking:", userBooking._id);
-            await booking.deleteOne({ _id: new mongoose.Types.ObjectId(userBooking._id) });
+            await booking.deleteOne({ _id: userBooking._id });
         }
 
         // Step 6: Update Event Details (Seats Availability)
@@ -360,7 +358,6 @@ accountRoute.delete('/cancelTicket', authenticate, async (req, res) => {
         res.status(500).json({ msg: "Internal Server Error", error: error.message });
     }
 });
-
 
 accountRoute.get('/searchEvent', async (req, res) => {
     try {

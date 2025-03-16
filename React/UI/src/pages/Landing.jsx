@@ -73,7 +73,7 @@ const Landing = () => {
           <section className="py-10 bg-[#F59B9E]" id="events">
             <div className="max-w-7xl mx-auto px-6 sm:px-10">
               <h2 className="text-center font-serif text-3xl sm:text-4xl font-medium text-[#981D26]">Mark Your Calendars</h2>
-              <EventGrid isHome={true} showButton={false} />
+              <EventGrid isHome={true} showBookButton = {false} showEditButton = {false} showDeleteButton = {false}/>
             </div>
           </section>
 
