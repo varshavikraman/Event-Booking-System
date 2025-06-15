@@ -82,7 +82,9 @@ To create a seamless and efficient event booking platform that enhances the user
 1. **Clone the repository:**  
 
     ```bash
-    git clone [repository URL]
+    git clone git@github.com:varshavikraman/Event-Booking-System.git
+    ```
+    ```bash
     cd EventBookingSystem_Docker
     ```
 
