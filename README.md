@@ -83,7 +83,7 @@ To create a seamless and efficient event booking platform that enhances the user
 
     ```bash
     git clone [repository URL]
-    cd event-booking-system
+    cd EventBookingSystem_Docker
     ```
 
 2. **Set up environment variables:** 
